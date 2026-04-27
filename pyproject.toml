@@ -1,0 +1,73 @@
+[tool.mypy]
+# Updated to your environment version
+python_version = "3.14"
+
+# ==========================================
+# STRICT MODE SETTINGS
+# ==========================================
+# This enables nearly all optional strictness flags
+strict = true
+
+# ==========================================
+# ADDITIONAL SAFETY CHECKS
+# ==========================================
+# Still good to keep these for extra verbosity
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+
+# We keep this because external libraries (like ollama) might lack stubs
+ignore_missing_imports = true
+
+# Exclude your books data folder
+exclude = ["books/"]
+
+[tool.ruff]
+# Same as Black.
+line-length = 88
+# Assume Python 3.14
+target-version = "py314"
+
+[tool.ruff.lint]
+# Enable a wide range of rules for strict code quality
+select = [
+    "E",     # pycodestyle errors
+    "W",     # pycodestyle warnings
+    "F",     # Pyflakes
+    "I",     # isort (import sorting)
+    "B",     # flake8-bugbear (common bugs/design issues)
+    "UP",    # pyupgrade (modern syntax upgrades)
+    "SIM",   # flake8-simplify (code simplification)
+    "C4",    # flake8-comprehensions
+    "DTZ",   # flake8-datetimez (timezone awareness)
+    "T10",   # flake8-debugger
+    "EM",    # flake8-errmsg (raw literals in exceptions)
+    "TRY",   # tryceratops (exception handling best practices)
+    "RUF",   # Ruff-specific rules
+    "N",     # pep8-naming
+    "S",     # flake8-bandit (security analysis)
+    "ASYNC", # flake8-async
+    "TID",   # flake8-tidy-imports
+    "ARG",   # flake8-unused-arguments
+    "PTH",   # flake8-use-pathlib (modern file path handling)
+    "ERA",   # eradicate (commented-out code detection)
+]
+
+ignore = [
+    "TRY003", # Avoid enforcing abstract raise messages to allow informative errors
+]
+
+[tool.ruff.lint.isort]
+# Sort imports in a professional and clean manner
+combine-as-imports = true
+lines-after-imports = 2
+
+[tool.ruff.format]
+# Built-in formatter settings (Black compatible)
+quote-style = "double"
+indent-style = "space"
+
+[tool.ruff.lint.per-file-ignores]
+# Ignore assert detections in tests (standard pytest practice)
+"tests/**" = ["S101"]
+"**/test_*.py" = ["S101"]

@@ -1,0 +1,15 @@
+/.vscode
+/.devcontainer
+# Python bytecode
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Linters cache
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+# Linters cache
+
+.env
