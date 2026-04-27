@@ -19,9 +19,6 @@ warn_unused_ignores = true
 # We keep this because external libraries (like ollama) might lack stubs
 ignore_missing_imports = true
 
-# Exclude your books data folder
-exclude = ["books/"]
-
 [tool.ruff]
 # Same as Black.
 line-length = 88
