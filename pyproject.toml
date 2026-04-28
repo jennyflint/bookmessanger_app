@@ -54,6 +54,10 @@ ignore = [
     "TRY003", # Avoid enforcing abstract raise messages to allow informative errors
 ]
 
+exclude = [
+    "alembic",
+]
+
 [tool.ruff.lint.isort]
 # Sort imports in a professional and clean manner
 combine-as-imports = true

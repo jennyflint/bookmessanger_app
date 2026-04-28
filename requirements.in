@@ -5,3 +5,6 @@ SQLAlchemy
 ruff
 mypy
 pytest
+alembic
+psycopg2-binary
+dotenv
