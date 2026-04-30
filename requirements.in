@@ -8,3 +8,6 @@ pytest
 alembic
 psycopg2-binary
 dotenv
+authlib
+passlib
+argon2-cffi
