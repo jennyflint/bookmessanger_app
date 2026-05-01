@@ -1,0 +1,2 @@
+class FileSaveError(Exception):
+    pass

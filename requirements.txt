@@ -4,6 +4,8 @@
 #
 #    pip-compile requirements.in
 #
+aiofiles==25.1.0
+    # via -r requirements.in
 alembic==1.18.4
     # via -r requirements.in
 annotated-doc==0.0.4
@@ -72,10 +74,14 @@ pydantic-core==2.46.3
     # via pydantic
 pygments==2.20.0
     # via pytest
+pyjwt==2.12.1
+    # via -r requirements.in
 pytest==9.0.3
     # via -r requirements.in
 python-dotenv==1.2.2
     # via dotenv
+python-multipart==0.0.27
+    # via -r requirements.in
 ruff==0.15.12
     # via -r requirements.in
 sqlalchemy==2.0.49
@@ -84,6 +90,8 @@ sqlalchemy==2.0.49
     #   alembic
 starlette==1.0.0
     # via fastapi
+types-aiofiles==25.1.0.20260409
+    # via -r requirements.in
 typing-extensions==4.15.0
     # via
     #   alembic

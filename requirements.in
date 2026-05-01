@@ -11,3 +11,7 @@ dotenv
 authlib
 passlib
 argon2-cffi
+python-multipart
+pyjwt
+aiofiles
+types-aiofiles

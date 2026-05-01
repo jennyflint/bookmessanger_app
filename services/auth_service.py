@@ -19,6 +19,13 @@ pwd_context = CryptContext(
     argon2__parallelism=2,
 )
 
+ACCESS_TOKEN_EXPIRES_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 15))
+REFRESH_TOKEN_EXPIRES_DAYS = int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS", 7))
+
+if not ACCESS_TOKEN_EXPIRES_MINUTES or not REFRESH_TOKEN_EXPIRES_DAYS:
+    err_msg = "Token expiration environment variables are not set"
+    raise ValueError(err_msg)
+
 
 class AuthService:
     def __init__(self, db: AsyncSession):
@@ -59,8 +66,8 @@ class AuthService:
 
     def _generate_app_tokens(self, subject: str) -> dict[str, str | datetime]:
         now = datetime.now(UTC)
-        access_exp = now + timedelta(minutes=15)
-        refresh_exp = now + timedelta(days=7)
+        access_exp = now + timedelta(minutes=ACCESS_TOKEN_EXPIRES_MINUTES)
+        refresh_exp = now + timedelta(days=REFRESH_TOKEN_EXPIRES_DAYS)
 
         header = {"alg": "HS256"}
 

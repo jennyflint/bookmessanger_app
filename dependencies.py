@@ -1,19 +1,21 @@
 import os
-from typing import Annotated
+from typing import Annotated, Any
 
-from authlib.jose import jwt
-from fastapi import Depends, HTTPException, status
+import jwt
+from fastapi import Depends, File, HTTPException, UploadFile, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database import get_db
 from models.user import User
+from services.file_service import FileService
+from validators.file_validator import FileValidator
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
-JWT_SECRET = os.getenv("JWT_SECRET_KEY")
+JWT_SECRET = os.getenv("JWT_SECRET_KEY", "")
 
 if not JWT_SECRET:
     err_msg = "JWT_SECRET_KEY environment variable is not set"
@@ -58,3 +60,28 @@ async def get_current_user(
     if user is None:
         raise credentials_exception
     return user
+
+
+def get_file_service() -> FileService:
+    return FileService()
+
+
+# validator dependency
+
+
+def file_validator_dependency(
+    *,
+    allowed_extensions: set[str] | None = None,
+    allowed_content_types: set[str] | None = None,
+    max_size: int | str | None = None,
+) -> Any:
+    validator = FileValidator(
+        allowed_extensions=allowed_extensions,
+        allowed_content_types=allowed_content_types,
+        max_size=max_size,
+    )
+
+    async def _validate(file: Annotated[UploadFile, File()]) -> UploadFile:
+        return await validator.validate(file)
+
+    return Depends(_validate)
