@@ -8,12 +8,16 @@ aiofiles==25.1.0
     # via -r requirements.in
 alembic==1.18.4
     # via -r requirements.in
+amqp==5.3.1
+    # via kombu
 annotated-doc==0.0.4
     # via fastapi
 annotated-types==0.7.0
     # via pydantic
 anyio==4.13.0
-    # via starlette
+    # via
+    #   httpx
+    #   starlette
 argon2-cffi==25.1.0
     # via -r requirements.in
 argon2-cffi-bindings==25.1.0
@@ -24,12 +28,31 @@ authlib==1.7.0
     # via -r requirements.in
 authx==1.6.0
     # via -r requirements.in
+billiard==4.2.4
+    # via celery
+celery==5.6.3
+    # via -r requirements.in
+certifi==2026.4.22
+    # via
+    #   httpcore
+    #   httpx
 cffi==2.0.0
     # via
     #   argon2-cffi-bindings
     #   cryptography
 click==8.3.3
-    # via uvicorn
+    # via
+    #   celery
+    #   click-didyoumean
+    #   click-plugins
+    #   click-repl
+    #   uvicorn
+click-didyoumean==0.3.1
+    # via celery
+click-plugins==1.1.1.2
+    # via celery
+click-repl==0.3.0
+    # via celery
 cryptography==47.0.0
     # via
     #   authlib
@@ -44,15 +67,25 @@ fastapi==0.136.1
 greenlet==3.5.0
     # via sqlalchemy
 h11==0.16.0
-    # via uvicorn
+    # via
+    #   httpcore
+    #   uvicorn
+httpcore==1.0.9
+    # via httpx
+httpx==0.28.1
+    # via -r requirements.in
 idna==3.13
-    # via anyio
+    # via
+    #   anyio
+    #   httpx
 iniconfig==2.3.0
     # via pytest
 itsdangerous==2.2.0
     # via authx
 joserfc==1.6.4
     # via authlib
+kombu==5.6.2
+    # via celery
 librt==0.9.0
     # via mypy
 mako==1.3.12
@@ -64,13 +97,17 @@ mypy==1.20.2
 mypy-extensions==1.1.0
     # via mypy
 packaging==26.2
-    # via pytest
+    # via
+    #   kombu
+    #   pytest
 passlib==1.7.4
     # via -r requirements.in
 pathspec==1.1.1
     # via mypy
 pluggy==1.6.0
     # via pytest
+prompt-toolkit==3.0.52
+    # via click-repl
 psycopg2-binary==2.9.12
     # via -r requirements.in
 pycparser==3.0
@@ -93,7 +130,9 @@ pyjwt[crypto]==2.12.1
 pytest==9.0.3
     # via -r requirements.in
 python-dateutil==2.9.0.post0
-    # via authx
+    # via
+    #   authx
+    #   celery
 python-dotenv==1.2.2
     # via
     #   dotenv
@@ -102,6 +141,8 @@ python-multipart==0.0.27
     # via -r requirements.in
 pytz==2026.1.post1
     # via authx
+redis==7.4.0
+    # via -r requirements.in
 ruff==0.15.12
     # via -r requirements.in
 six==1.17.0
@@ -128,5 +169,16 @@ typing-inspection==0.4.2
     #   fastapi
     #   pydantic
     #   pydantic-settings
+tzdata==2026.2
+    # via kombu
+tzlocal==5.3.1
+    # via celery
 uvicorn==0.46.0
     # via -r requirements.in
+vine==5.1.0
+    # via
+    #   amqp
+    #   celery
+    #   kombu
+wcwidth==0.7.0
+    # via prompt-toolkit

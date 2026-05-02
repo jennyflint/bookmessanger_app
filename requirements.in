@@ -9,6 +9,7 @@ alembic
 psycopg2-binary
 dotenv
 authlib
+httpx
 passlib
 argon2-cffi
 python-multipart
@@ -16,3 +17,5 @@ pyjwt
 aiofiles
 types-aiofiles
 authx
+celery
+redis
