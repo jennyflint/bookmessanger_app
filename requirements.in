@@ -19,3 +19,4 @@ types-aiofiles
 authx
 celery
 redis
+flower
