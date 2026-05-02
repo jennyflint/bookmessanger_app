@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 from datetime import UTC, datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -7,11 +10,17 @@ from sqlalchemy.sql import func
 from database import Base
 
 
+if TYPE_CHECKING:
+    from models.book import Book
+
+
 class User(Base):
     __tablename__ = "users"
+
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, index=True)
     email: Mapped[str] = mapped_column(String, unique=True, index=True, nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
@@ -23,9 +32,14 @@ class User(Base):
         back_populates="user", cascade="all, delete-orphan"
     )
 
+    books: Mapped[list[Book]] = relationship(
+        "Book", back_populates="user", cascade="all, delete-orphan"
+    )
+
 
 class RefreshToken(Base):
     __tablename__ = "refresh_tokens"
+
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), index=True)
     token: Mapped[str] = mapped_column(String, unique=True, index=True)

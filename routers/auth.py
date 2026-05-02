@@ -1,13 +1,12 @@
 from typing import Annotated, cast
 
 from authx import TokenPayload
-from fastapi import APIRouter, Depends, FastAPI, Request, Response, status
+from fastapi import APIRouter, Depends, Request, Response, status
 from fastapi.responses import RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
-from starlette.middleware.sessions import SessionMiddleware
 
 from auth_provider.oauth_provider import oauth
-from config.auth import REDIRECT_OAUTH_URI, SESSION_SECRET_KEY
+from config.auth import REDIRECT_OAUTH_URI
 from database import get_db
 from exceptions.auth_exception import EmailAuthError
 from exceptions.user_exception import UserInactiveError
@@ -17,12 +16,7 @@ from security import auth
 from services.auth_service import AuthService
 
 
-app = FastAPI()
 router = APIRouter(prefix="/auth")
-
-app.add_middleware(SessionMiddleware, secret_key=SESSION_SECRET_KEY)
-
-auth.handle_errors(app)
 
 
 @router.get("/login-via-google")

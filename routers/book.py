@@ -1,14 +1,14 @@
-from typing import Annotated, Any
+from typing import Annotated
 
-from fastapi import APIRouter, Depends, UploadFile
+from fastapi import APIRouter, Depends, HTTPException, UploadFile
+from starlette import status
 
-from config.book import BASE_STORAGE_DIR
 from dependencies import (
     CurrentUser,
     file_validator_dependency,
-    get_file_service,
 )
-from services.file_service import FileService
+from schema.response.book_response import BookResponse
+from services.upload_book_service import UploadBookService
 
 
 router = APIRouter()
@@ -24,10 +24,14 @@ book_validator = file_validator_dependency(
 async def upload_file(
     file: Annotated[UploadFile, book_validator],
     current_user: CurrentUser,
-    file_service: Annotated[FileService, Depends(get_file_service)],
-) -> dict[str, Any]:
-    result = await file_service.save(
-        file=file, sub_path=f"{BASE_STORAGE_DIR}/{current_user.id}"
-    )
+    upload_book_service: Annotated[UploadBookService, Depends()],
+) -> BookResponse:
 
-    return {"message": "File uploaded successfully", **result.model_dump()}
+    book = await upload_book_service.upload_book(current_user.id, file)
+
+    if not book:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Book upload failed"
+        )
+
+    return BookResponse(id=book.id, name=book.original_name)

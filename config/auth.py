@@ -1,6 +1,10 @@
 import os
 from typing import Literal, cast
 
+from dotenv import load_dotenv
+
+
+load_dotenv()
 
 AlgorithmType = Literal[
     "HS256",
