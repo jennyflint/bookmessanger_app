@@ -1,169 +1,62 @@
-import os
 from datetime import UTC, datetime, timedelta
-from typing import Any
 
-from authlib.jose import jwt
-from fastapi import HTTPException
-from passlib.context import CryptContext
-from sqlalchemy import select, update
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from config.auth import REFRESH_TOKEN_EXPIRE_DAYS
+from exceptions.auth_exception import EmailAuthError
+from exceptions.user_exception import UserInactiveError
 from models.user import RefreshToken, User
-
-
-pwd_context = CryptContext(
-    schemes=["argon2"],
-    deprecated="auto",
-    argon2__time_cost=3,
-    argon2__memory_cost=65536,  # 64 MB
-    argon2__parallelism=2,
-)
-
-ACCESS_TOKEN_EXPIRES_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 15))
-REFRESH_TOKEN_EXPIRES_DAYS = int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS", 7))
-
-if not ACCESS_TOKEN_EXPIRES_MINUTES or not REFRESH_TOKEN_EXPIRES_DAYS:
-    err_msg = "Token expiration environment variables are not set"
-    raise ValueError(err_msg)
+from schema.response.auth_response import TokenResponse
+from security import auth
 
 
 class AuthService:
-    def __init__(self, db: AsyncSession):
-        self.db = db
-        self.jwt_secret = os.getenv("JWT_SECRET_KEY")
-
-        if not self.jwt_secret:
-            err_msg = "JWT_SECRET_KEY environment variable is not set"
-            raise ValueError(err_msg)
-
-    async def process_google_user(
-        self, user_info: dict[str, Any]
-    ) -> dict[str, str | datetime]:
-        email = user_info.get("email")
-        if not email:
-            raise HTTPException(status_code=400, detail="Google response missing email")
-
-        query = select(User).where(User.email == email)
-        result = await self.db.execute(query)
+    @staticmethod
+    async def get_or_create_user(db: AsyncSession, email: str) -> User:
+        stmt = select(User).where(User.email == email)
+        result = await db.execute(stmt)
         user = result.scalar_one_or_none()
 
         if not user:
             user = User(email=email)
-            self.db.add(user)
+            db.add(user)
+            await db.commit()
+            await db.refresh(user)
 
-            await self.db.flush()
+        return user
 
-        tokens = self._generate_app_tokens(str(user.id))
-        db_token = RefreshToken(
-            user_id=user.id,
-            token=pwd_context.hash(tokens["refresh_token"]),
-            expires_at=tokens["refresh_exp_date"],
+    @staticmethod
+    async def save_refresh_token(db: AsyncSession, user_id: int, token: str) -> None:
+        expires_date = datetime.now(UTC) + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
+
+        db_refresh_token = RefreshToken(
+            user_id=user_id, token=token, expires_at=expires_date, is_revoked=False
         )
-        self.db.add(db_token)
-        await self.db.commit()
-        tokens.pop("refresh_exp_date", None)
-        return tokens
+        db.add(db_refresh_token)
+        await db.commit()
 
-    def _generate_app_tokens(self, subject: str) -> dict[str, str | datetime]:
-        now = datetime.now(UTC)
-        access_exp = now + timedelta(minutes=ACCESS_TOKEN_EXPIRES_MINUTES)
-        refresh_exp = now + timedelta(days=REFRESH_TOKEN_EXPIRES_DAYS)
+    @classmethod
+    async def generate_authx_tokens(
+        cls, db: AsyncSession, user_info: dict[str, str]
+    ) -> TokenResponse:
+        email = user_info.get("email")
 
-        header = {"alg": "HS256"}
+        if not email:
+            raise EmailAuthError()
 
-        access_token = jwt.encode(
-            header,
-            {"sub": subject, "exp": access_exp, "type": "access"},
-            self.jwt_secret,
-        )
+        user = await cls.get_or_create_user(db, email)
 
-        refresh_token = jwt.encode(
-            header,
-            {"sub": subject, "exp": refresh_exp, "type": "refresh"},
-            self.jwt_secret,
-        )
+        if not user.is_active:
+            raise UserInactiveError()
 
-        return {
-            "access_token": access_token,
-            "refresh_token": refresh_token,
-            "refresh_exp_date": refresh_exp,
-            "token_type": "bearer",
-        }
+        uid_str = str(user.id)
 
-    async def rotate_refresh_token(
-        self, plain_refresh_token: str
-    ) -> dict[str, str | datetime]:
-        try:
-            payload = jwt.decode(
-                plain_refresh_token, self.jwt_secret, algorithms=["HS256"]
-            )
-            if payload.get("type") != "refresh":
-                raise HTTPException(status_code=401, detail="Invalid token type")
+        # Generate tokens
+        access_token = auth.create_access_token(uid=uid_str)
+        refresh_token = auth.create_refresh_token(uid=uid_str)
 
-            user_id = int(payload["sub"])
+        # Save refresh_token in the database
+        await cls.save_refresh_token(db, user.id, refresh_token)
 
-        except jwt.ExpiredSignatureError as err:
-            raise HTTPException(
-                status_code=401, detail="Refresh token expired"
-            ) from err
-
-        except jwt.InvalidTokenError as err:
-            raise HTTPException(
-                status_code=401, detail="Invalid refresh token format"
-            ) from err
-
-        except ValueError as err:
-            raise HTTPException(
-                status_code=401, detail="Invalid subject in token"
-            ) from err
-
-        query = select(RefreshToken).where(RefreshToken.user_id == user_id)
-        result = await self.db.execute(query)
-        db_tokens = result.scalars().all()
-
-        matched_token = None
-        for dt in db_tokens:
-            if pwd_context.verify(plain_refresh_token, dt.token):
-                matched_token = dt
-                break
-
-        if not matched_token:
-            raise HTTPException(
-                status_code=401, detail="Refresh token not found in database"
-            )
-
-        if matched_token.expires_at < datetime.now(UTC):
-            raise HTTPException(
-                status_code=401, detail="Refresh token expired in database"
-            )
-
-        if matched_token.is_revoked:
-            await self._revoke_all_user_tokens(user_id)
-            raise HTTPException(
-                status_code=401,
-                detail="Token compromise detected. All sessions revoked.",
-            )
-
-        matched_token.is_revoked = True
-        new_tokens = self._generate_app_tokens(str(user_id))
-
-        new_db_token = RefreshToken(
-            user_id=user_id,
-            token=pwd_context.hash(new_tokens["refresh_token"]),
-            expires_at=new_tokens["refresh_exp_date"],
-        )
-
-        self.db.add(new_db_token)
-        await self.db.commit()
-
-        new_tokens.pop("refresh_exp_date", None)
-        return new_tokens
-
-    async def _revoke_all_user_tokens(self, user_id: int) -> None:
-        query = (
-            update(RefreshToken)
-            .where(RefreshToken.user_id == user_id)
-            .values(is_revoked=True)
-        )
-        await self.db.execute(query)
-        await self.db.commit()
+        return TokenResponse(access_token=access_token, refresh_token=refresh_token)

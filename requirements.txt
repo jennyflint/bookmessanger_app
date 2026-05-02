@@ -22,6 +22,8 @@ asyncpg==0.31.0
     # via -r requirements.in
 authlib==1.7.0
     # via -r requirements.in
+authx==1.6.0
+    # via -r requirements.in
 cffi==2.0.0
     # via
     #   argon2-cffi-bindings
@@ -32,10 +34,13 @@ cryptography==47.0.0
     # via
     #   authlib
     #   joserfc
+    #   pyjwt
 dotenv==0.9.9
     # via -r requirements.in
 fastapi==0.136.1
-    # via -r requirements.in
+    # via
+    #   -r requirements.in
+    #   authx
 greenlet==3.5.0
     # via sqlalchemy
 h11==0.16.0
@@ -44,6 +49,8 @@ idna==3.13
     # via anyio
 iniconfig==2.3.0
     # via pytest
+itsdangerous==2.2.0
+    # via authx
 joserfc==1.6.4
     # via authlib
 librt==0.9.0
@@ -69,21 +76,36 @@ psycopg2-binary==2.9.12
 pycparser==3.0
     # via cffi
 pydantic==2.13.3
-    # via fastapi
+    # via
+    #   authx
+    #   fastapi
+    #   pydantic-settings
 pydantic-core==2.46.3
     # via pydantic
+pydantic-settings==2.14.0
+    # via authx
 pygments==2.20.0
     # via pytest
-pyjwt==2.12.1
-    # via -r requirements.in
+pyjwt[crypto]==2.12.1
+    # via
+    #   -r requirements.in
+    #   authx
 pytest==9.0.3
     # via -r requirements.in
+python-dateutil==2.9.0.post0
+    # via authx
 python-dotenv==1.2.2
-    # via dotenv
+    # via
+    #   dotenv
+    #   pydantic-settings
 python-multipart==0.0.27
     # via -r requirements.in
+pytz==2026.1.post1
+    # via authx
 ruff==0.15.12
     # via -r requirements.in
+six==1.17.0
+    # via python-dateutil
 sqlalchemy==2.0.49
     # via
     #   -r requirements.in
@@ -105,5 +127,6 @@ typing-inspection==0.4.2
     # via
     #   fastapi
     #   pydantic
+    #   pydantic-settings
 uvicorn==0.46.0
     # via -r requirements.in
