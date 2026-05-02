@@ -4,7 +4,7 @@ from typing import Annotated
 from fastapi import Depends, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.config.book import BASE_STORAGE_DIR, PREFIX_BOOK_NAME
+from src.config.book import PREFIX_BOOK_NAME, STORAGE_BOOK_UPLOAD_DIR
 from src.database import get_db
 from src.dependencies import (
     get_file_service,
@@ -30,7 +30,7 @@ class UploadBookService:
         await self.db.commit()
         await self.db.refresh(book)
 
-        sub_path = f"{BASE_STORAGE_DIR}/{user_id}"
+        sub_path = f"{STORAGE_BOOK_UPLOAD_DIR}/{user_id}"
         filename = f"{PREFIX_BOOK_NAME}{book.id}"
         filename = filename + Path(file.filename).suffix.lower()
 
