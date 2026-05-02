@@ -4,13 +4,13 @@ from typing import Annotated
 from fastapi import Depends, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from config.book import BASE_STORAGE_DIR, PREFIX_BOOK_NAME
-from database import get_db
-from dependencies import (
+from src.config.book import BASE_STORAGE_DIR, PREFIX_BOOK_NAME
+from src.database import get_db
+from src.dependencies import (
     get_file_service,
 )
-from models.book import Book
-from services.file_service import FileService
+from src.models.book import Book
+from src.services.file_service import FileService
 
 
 class UploadBookService:

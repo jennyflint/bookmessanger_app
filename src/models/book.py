@@ -6,8 +6,8 @@ from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
-from database import Base
-from models.user import User
+from src.database import Base
+from src.models.user import User
 
 
 class Book(Base):

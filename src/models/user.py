@@ -7,11 +7,11 @@ from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
-from database import Base
+from src.database import Base
 
 
 if TYPE_CHECKING:
-    from models.book import Book
+    from src.models.book import Book
 
 
 class User(Base):

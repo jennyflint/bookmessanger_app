@@ -3,7 +3,7 @@ from typing import Any
 
 from authx import AuthX, AuthXConfig
 
-from config.auth import (
+from src.config.auth import (
     ACCESS_TOKEN_EXPIRE_MINUTES,
     JWT_ALGORITHM,
     JWT_SECRET_KEY,

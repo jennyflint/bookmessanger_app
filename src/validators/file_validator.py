@@ -2,7 +2,7 @@ from pathlib import Path
 
 from fastapi import HTTPException, UploadFile
 
-from utils.utils import parse_size
+from src.utils.utils import parse_size
 
 
 class FileValidator:

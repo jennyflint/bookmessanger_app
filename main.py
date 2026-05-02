@@ -3,11 +3,11 @@ import os
 from fastapi import APIRouter, Depends, FastAPI
 from starlette.middleware.sessions import SessionMiddleware
 
-from config.auth import SESSION_SECRET_KEY
-from dependencies import get_current_user
-from routers.auth import router as auth_router
-from routers.book import router as book_router
-from security import auth
+from src.config.auth import SESSION_SECRET_KEY
+from src.dependencies import get_current_user
+from src.routers.auth import router as auth_router
+from src.routers.book import router as book_router
+from src.security import auth
 
 
 app = FastAPI()

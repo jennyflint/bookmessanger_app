@@ -5,11 +5,11 @@ from fastapi import Depends, File, HTTPException, UploadFile, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from database import get_db
-from models.user import User
-from security import auth
-from services.file_service import FileService
-from validators.file_validator import FileValidator
+from src.database import get_db
+from src.models.user import User
+from src.security import auth
+from src.services.file_service import FileService
+from src.validators.file_validator import FileValidator
 
 
 async def get_current_user(

@@ -3,12 +3,12 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, UploadFile
 from starlette import status
 
-from dependencies import (
+from src.dependencies import (
     CurrentUser,
     file_validator_dependency,
 )
-from schema.response.book_response import BookResponse
-from services.upload_book_service import UploadBookService
+from src.schema.response.book_response import BookResponse
+from src.services.upload_book_service import UploadBookService
 
 
 router = APIRouter()

@@ -3,12 +3,12 @@ from datetime import UTC, datetime, timedelta
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from config.auth import REFRESH_TOKEN_EXPIRE_DAYS
-from exceptions.auth_exception import EmailAuthError
-from exceptions.user_exception import UserInactiveError
-from models.user import RefreshToken, User
-from schema.response.auth_response import TokenResponse
-from security import auth
+from src.config.auth import REFRESH_TOKEN_EXPIRE_DAYS
+from src.exceptions.auth_exception import EmailAuthError
+from src.exceptions.user_exception import UserInactiveError
+from src.models.user import RefreshToken, User
+from src.schema.response.auth_response import TokenResponse
+from src.security import auth
 
 
 class AuthService:

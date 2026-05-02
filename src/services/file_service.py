@@ -4,8 +4,8 @@ from pathlib import Path
 import aiofiles
 from fastapi import UploadFile
 
-from exceptions.file_exception import FileSaveError
-from schema.response.file_upload_response import FileUploadResponse
+from src.exceptions.file_exception import FileSaveError
+from src.schema.response.file_upload_response import FileUploadResponse
 
 
 class FileService:
