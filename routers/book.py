@@ -3,8 +3,11 @@ from typing import Annotated, Any
 from fastapi import APIRouter, Depends, UploadFile
 
 from config.book import BASE_STORAGE_DIR
-from dependencies import file_validator_dependency, get_current_user, get_file_service
-from models.user import User
+from dependencies import (
+    CurrentUser,
+    file_validator_dependency,
+    get_file_service,
+)
 from services.file_service import FileService
 
 
@@ -20,7 +23,7 @@ book_validator = file_validator_dependency(
 @router.post("/upload")
 async def upload_file(
     file: Annotated[UploadFile, book_validator],
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: CurrentUser,
     file_service: Annotated[FileService, Depends(get_file_service)],
 ) -> dict[str, Any]:
     result = await file_service.save(
