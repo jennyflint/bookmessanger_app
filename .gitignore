@@ -17,3 +17,6 @@ alembic.ini
 
 #storage > uploads
 /storage/uploads
+
+#storage > books/models
+/storage/books/models

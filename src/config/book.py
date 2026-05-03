@@ -13,3 +13,5 @@ PREFIX_BOOK_NAME: str = "book_"
 
 # Storage Directories
 STORAGE_BOOK_UPLOAD_DIR: Path = Path("uploads") / "books" / "users"
+STORAGE_MODEL_BOOK_DIR: Path = Path("books") / "models" / "json"
+STORAGE_HTML_TEMPLATE: Path = Path("books") / "templates" / "html"
