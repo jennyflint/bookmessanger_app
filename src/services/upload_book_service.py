@@ -10,7 +10,9 @@ from src.dependencies import (
     get_file_service,
 )
 from src.models.book import Book
+from src.models.job import Job, JobTypeEnum
 from src.services.file_service import FileService
+from src.tasks.parsing_book_task import parsing_book_task
 
 
 class UploadBookService:
@@ -36,4 +38,19 @@ class UploadBookService:
 
         await self.file_service.save(file=file, sub_path=sub_path, filename=filename)
 
+        await self._create_job(book)
+
         return book
+
+    async def _create_job(self, book: Book) -> Job:
+        job = Job(
+            object_id=book.id,
+            object_table=book.__tablename__,
+            type=JobTypeEnum.BOOK_PARSING,
+        )
+        self.db.add(job)
+        await self.db.commit()
+        await self.db.refresh(job)
+
+        parsing_book_task.delay(job.id)
+        return job
