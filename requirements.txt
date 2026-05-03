@@ -71,7 +71,9 @@ fastapi==0.136.1
 flower==2.0.1
     # via -r requirements.in
 greenlet==3.5.0
-    # via sqlalchemy
+    # via
+    #   playwright
+    #   sqlalchemy
 h11==0.16.0
     # via
     #   httpcore
@@ -112,6 +114,8 @@ passlib==1.7.4
     # via -r requirements.in
 pathspec==1.1.1
     # via mypy
+playwright==1.59.0
+    # via -r requirements.in
 pluggy==1.6.0
     # via pytest
 prometheus-client==0.25.0
@@ -131,6 +135,8 @@ pydantic-core==2.46.3
     # via pydantic
 pydantic-settings==2.14.0
     # via authx
+pyee==13.0.1
+    # via playwright
 pygments==2.20.0
     # via pytest
 pyjwt[crypto]==2.12.1
@@ -179,6 +185,7 @@ typing-extensions==4.15.0
     #   mypy
     #   pydantic
     #   pydantic-core
+    #   pyee
     #   sqlalchemy
     #   typing-inspection
 typing-inspection==0.4.2

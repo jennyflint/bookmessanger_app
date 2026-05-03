@@ -5,10 +5,14 @@ from fastapi import Depends, File, HTTPException, UploadFile, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.config.app import PLAYWRIGHT_WS_ENDPOINT
 from src.database import get_db
 from src.models.user import User
 from src.security import auth
+from src.services.convert_service import ConvertService
+from src.services.converters.convert import FormatType, PdfConverter
 from src.services.file_service import FileService
+from src.services.module.playwright_pdf_module import PlaywrightPDFGenerator
 from src.validators.file_validator import FileValidator
 
 
@@ -41,9 +45,6 @@ def get_file_service() -> FileService:
     return FileService()
 
 
-# validator dependency
-
-
 def file_validator_dependency(
     *,
     allowed_extensions: set[str] | None = None,
@@ -60,3 +61,12 @@ def file_validator_dependency(
         return await validator.validate(file)
 
     return Depends(_validate)
+
+
+def get_converter_service() -> ConvertService:
+    playwright_gen = PlaywrightPDFGenerator(PLAYWRIGHT_WS_ENDPOINT)
+    pdf_converter = PdfConverter(playwright_gen)
+    service = ConvertService()
+    service.register(FormatType.FORMAT_PDF, pdf_converter)
+
+    return service

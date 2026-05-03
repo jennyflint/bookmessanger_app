@@ -21,3 +21,4 @@ celery
 redis
 flower
 beautifulsoup4
+playwright
