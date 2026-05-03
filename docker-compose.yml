@@ -37,6 +37,17 @@ services:
       - .:/app
     networks:
       - app-network
+  playwright_browser:
+    image: ghcr.io/browserless/chromium:latest
+    container_name: playwright_browser
+    restart: always
+    ports:
+      - "${PLAYWRIGHT_HOST_PORT:-3000}:3000"
+    environment:
+      - KEEP_ALIVE=true
+      - MAX_CONCURRENT_SESSIONS=5
+    networks:
+      - app-network
 
   redis:
     image: redis:8.6-alpine
