@@ -28,6 +28,8 @@ authlib==1.7.0
     # via -r requirements.in
 authx==1.6.0
     # via -r requirements.in
+beautifulsoup4==4.14.3
+    # via -r requirements.in
 billiard==4.2.4
     # via celery
 celery==5.6.3
@@ -157,6 +159,8 @@ ruff==0.15.12
     # via -r requirements.in
 six==1.17.0
     # via python-dateutil
+soupsieve==2.8.3
+    # via beautifulsoup4
 sqlalchemy==2.0.49
     # via
     #   -r requirements.in
@@ -170,6 +174,7 @@ types-aiofiles==25.1.0.20260409
 typing-extensions==4.15.0
     # via
     #   alembic
+    #   beautifulsoup4
     #   fastapi
     #   mypy
     #   pydantic

@@ -20,3 +20,4 @@ authx
 celery
 redis
 flower
+beautifulsoup4
