@@ -26,7 +26,7 @@ async def get_template_list(options: TemplateOptionsDep) -> list[EnumOptionRespo
 @router.get("/code/{template_type}")
 async def get_template_by_type(
     template_type: TemplateTypeEnum,
-) -> HTMLResponse | HTTPException:
+) -> HTMLResponse:
 
     file_name = f"{template_type}.html"
     template_path = STORAGE_HTML_TEMPLATE / file_name

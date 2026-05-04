@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, HTTPException, Response, UploadFile
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
@@ -17,6 +17,7 @@ from src.schema.request.book_request import ConvertBookRequest
 from src.schema.response.book_response import BookResponse
 from src.services.upload_book_service import UploadBookService
 from src.tasks.convert_book_task import convert_book_task
+from src.utils.storage import Storage
 
 
 router = APIRouter()
@@ -67,3 +68,18 @@ async def convert_book(
     convert_book_task.delay(job.id, request.format, request.template)
 
     return {"message": f"Book conversion started for job {job.id}."}
+
+
+@router.get(
+    "/model/{book_id}",
+    responses={400: {"description": "Bad Request - File not found or invalid"}},
+)
+async def get_book_model(
+    book: Annotated[Book, Depends(get_book_if_owner)],
+) -> Response:
+    try:
+        json_data = Storage.get_book_model_by_book(book)
+
+        return Response(content=json_data, media_type="application/json")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
