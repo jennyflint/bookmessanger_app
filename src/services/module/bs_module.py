@@ -1,5 +1,4 @@
 import json
-from typing import Any
 
 from bs4 import BeautifulSoup
 
@@ -8,7 +7,7 @@ class BsModule:
     def __init__(self, html_content: str):
         self.soup = BeautifulSoup(html_content, "html.parser")
 
-    def inject_json_to_script(self, tag_id: str, data: dict[str, Any]) -> bool:
+    def inject_json_to_script(self, tag_id: str, data: str) -> bool:
         script_tag = self.soup.find("script", id=tag_id)
 
         if script_tag:

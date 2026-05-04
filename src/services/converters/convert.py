@@ -1,12 +1,6 @@
-import enum
 from typing import Protocol
 
 from src.services.module.playwright_pdf_module import PlaywrightPDFGenerator
-
-
-class FormatType(enum.StrEnum):
-    FORMAT_PDF = "pdf"
-    FORMAT_DOCX = "docx"
 
 
 class IConverter(Protocol):

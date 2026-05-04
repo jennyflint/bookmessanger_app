@@ -3,7 +3,7 @@ from typing import Any
 
 from playwright.sync_api import sync_playwright
 
-from src.exceptions.convert_exceptions import ConvertPdfError
+from src.exceptions.convert_exception import ConvertPdfError
 
 
 class PlaywrightPDFGenerator:

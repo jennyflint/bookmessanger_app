@@ -5,4 +5,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-PLAYWRIGHT_WS_ENDPOINT = f"ws://localhost:{os.getenv('PLAYWRIGHT_WS_PORT', '3000')}"
+PLAYWRIGHT_WS_ENDPOINT = (
+    f"ws://playwright_browser:{os.getenv('PLAYWRIGHT_WS_PORT', '3000')}"
+)

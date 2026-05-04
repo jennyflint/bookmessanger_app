@@ -19,4 +19,4 @@ alembic.ini
 /storage/uploads
 
 #storage > books/models
-/storage/books/models
+/storage/books/

@@ -27,7 +27,7 @@ class UploadBookService:
     async def upload_book(self, user_id: int, file: UploadFile) -> Book | None:
         if not file.filename:
             return None
-        book = Book(original_name=file.filename)
+        book = Book(original_name=file.filename, user_id=user_id)
         self.db.add(book)
         await self.db.commit()
         await self.db.refresh(book)

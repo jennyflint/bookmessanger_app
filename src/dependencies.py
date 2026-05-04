@@ -7,10 +7,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.config.app import PLAYWRIGHT_WS_ENDPOINT
 from src.database import get_db
+from src.enums.enums import FormatTypeEnum
+from src.models.book import Book
 from src.models.user import User
 from src.security import auth
 from src.services.convert_service import ConvertService
-from src.services.converters.convert import FormatType, PdfConverter
+from src.services.converters.convert import PdfConverter
 from src.services.file_service import FileService
 from src.services.module.playwright_pdf_module import PlaywrightPDFGenerator
 from src.validators.file_validator import FileValidator
@@ -67,6 +69,29 @@ def get_converter_service() -> ConvertService:
     playwright_gen = PlaywrightPDFGenerator(PLAYWRIGHT_WS_ENDPOINT)
     pdf_converter = PdfConverter(playwright_gen)
     service = ConvertService()
-    service.register(FormatType.FORMAT_PDF, pdf_converter)
+    service.register(FormatTypeEnum.PDF, pdf_converter)
 
     return service
+
+
+async def get_book_if_owner(
+    book_id: int,
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> Book:
+    stmt = select(Book).where(Book.id == book_id)
+
+    result = await db.execute(stmt)
+    book = result.scalar_one_or_none()
+
+    if not book:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Book not found"
+        )
+    if book.user_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to access this book",
+        )
+
+    return book

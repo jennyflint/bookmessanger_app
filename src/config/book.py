@@ -12,6 +12,8 @@ BOOK_HTML_TEMPLATE: Path = Path("uploads") / "books" / "users"
 PREFIX_BOOK_NAME: str = "book_"
 
 # Storage Directories
-STORAGE_BOOK_UPLOAD_DIR: Path = Path("uploads") / "books" / "users"
-STORAGE_MODEL_BOOK_DIR: Path = Path("books") / "models" / "json"
-STORAGE_HTML_TEMPLATE: Path = Path("books") / "templates" / "html"
+STORAGE: Path = Path("storage")
+STORAGE_BOOK_UPLOAD_DIR: Path = STORAGE / "books" / "users"
+STORAGE_MODEL_BOOK_DIR: Path = STORAGE / "books" / "models" / "json"
+STORAGE_HTML_TEMPLATE: Path = STORAGE / "books" / "templates" / "html"
+STORAGE_COMPLETE_BOOK: Path = STORAGE / "books" / "complete" / "books"
