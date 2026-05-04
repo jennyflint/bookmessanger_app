@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import Annotated, Any
 
 from authx import TokenPayload
@@ -10,6 +11,7 @@ from src.database import get_db
 from src.enums.enums import FormatTypeEnum
 from src.models.book import Book
 from src.models.user import User
+from src.schema.response.enum_response import EnumOptionResponse
 from src.security import auth
 from src.services.convert_service import ConvertService
 from src.services.converters.convert import PdfConverter
@@ -95,3 +97,12 @@ async def get_book_if_owner(
         )
 
     return book
+
+
+def get_enum_options(enum_cls: type[Enum]) -> list[EnumOptionResponse]:
+    return [
+        EnumOptionResponse(
+            value=item.value, label=item.name.replace("_", " ").capitalize()
+        )
+        for item in enum_cls
+    ]
