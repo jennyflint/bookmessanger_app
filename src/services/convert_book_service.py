@@ -23,14 +23,11 @@ class ConvertBookService:
     def _get_book_json_model(self) -> str:
         return Storage.get_book_model_by_book(self.book)
 
-    def _get_html_template(self) -> str:
-        return Storage.get_template_by_type(self.template)
-
     def main(self) -> str:
-        html_template = self._get_html_template()
         json_model = self._get_book_json_model()
+
         html_data_injector_service = HtmlDataInjectorService(
-            html_content=html_template, json_data=json_model
+            template=self.template, json_data=json_model
         )
         html_page = html_data_injector_service.main()
 

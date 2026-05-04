@@ -1,28 +1,19 @@
-from src.exceptions.html_data_injector_exception import HtmlTagNotFoundError
-from src.services.module.bs_module import BsModule
+from src.config.book import STORAGE_HTML_TEMPLATE
+from src.template_manager import TemplateManager
 
 
 class HtmlDataInjectorService:
-    def __init__(self, html_content: str, json_data: str, new_title: str = ""):
-        self.html_module = BsModule(html_content)
+    def __init__(self, template: str, json_data: str, new_title: str = ""):
+        self.template = template
         self.json_data = json_data
         self.new_title = new_title
 
-    def inject_json_to_script(self, tag_id: str, data: str) -> bool:
-        return self.html_module.inject_json_to_script(tag_id, data)
-
-    def update_title(self, new_title: str) -> bool:
-        return self.html_module.update_title(new_title)
-
-    def get_html(self) -> str:
-        return self.html_module.get_html()
+        self.template_manager = TemplateManager(STORAGE_HTML_TEMPLATE)
 
     def main(self) -> str:
-        if not self.inject_json_to_script("json-data", self.json_data):
-            err_msg = "JSON data script tag not found"
-            raise HtmlTagNotFoundError(err_msg)
+        format_data = {
+            "json_data": self.json_data,
+            "title": self.new_title,
+        }
 
-        if self.new_title and not self.update_title(self.new_title):
-            err_msg = "Title tag not found"
-            raise HtmlTagNotFoundError(err_msg)
-        return self.get_html()
+        return self.template_manager.render(self.template + ".html", **format_data)

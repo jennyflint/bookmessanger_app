@@ -20,5 +20,5 @@ authx
 celery
 redis
 flower
-beautifulsoup4
+jinja2
 playwright
