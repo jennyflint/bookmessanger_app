@@ -7,6 +7,7 @@ from src.celery_app import celery_app
 from src.config.app import REDIS_URL
 from src.database import SessionLocal
 from src.enums.enums import FormatTypeEnum, TemplateTypeEnum
+from src.enums.websocket_enums import WebsocketStatusEnum, WebsocketTypeEnum
 from src.models.book import Book, CompleteBook
 from src.models.job import Job
 from src.services.convert_book_service import ConvertBookService
@@ -46,19 +47,20 @@ def convert_book_task(
             complete_book = CompleteBook(book=book, format=format_type, name=filename)
             db.add(complete_book)
             db.commit()
+
             message = {
-                "type": "book_converted",
+                "type": WebsocketTypeEnum.BOOK_CONVERTED,
                 "job_id": job_id,
                 "book_id": book.id,
-                "status": "success",
+                "status": WebsocketStatusEnum.SUCCESS,
                 "message": "Your book has been successfully converted!",
             }
         except Exception as e:
             message = {
-                "type": "book_converted",
+                "type": WebsocketTypeEnum.BOOK_CONVERTED,
                 "job_id": job_id,
                 "book_id": book.id,
-                "status": "error",
+                "status": WebsocketStatusEnum.ERROR,
                 "message": str(e),
             }
         redis_client.publish(f"user_notifications_{book.user_id}", json.dumps(message))
