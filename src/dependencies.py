@@ -1,8 +1,16 @@
 from enum import Enum
 from typing import Annotated, Any
 
-from authx import TokenPayload
-from fastapi import Depends, File, HTTPException, UploadFile, status
+from authx import RequestToken, TokenPayload
+from fastapi import (
+    Depends,
+    File,
+    HTTPException,
+    UploadFile,
+    WebSocket,
+    WebSocketException,
+    status,
+)
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -43,6 +51,50 @@ async def get_current_user(
 
 
 CurrentUser = Annotated[User, Depends(get_current_user)]
+
+
+async def get_current_user_from_websocket(
+    websocket: WebSocket,
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> User:
+    token = websocket.query_params.get("token")
+    if not token:
+        raise WebSocketException(
+            code=status.WS_1008_POLICY_VIOLATION, reason="Missing token in URL"
+        )
+
+    try:
+        req_token = RequestToken(token=token, location="query")
+        payload = auth.verify_token(req_token)
+    except Exception as e:
+        raise WebSocketException(
+            code=status.WS_1008_POLICY_VIOLATION, reason=f"Invalid token: {e!s}"
+        ) from e
+
+    if payload.type != "access":
+        raise WebSocketException(
+            code=status.WS_1008_POLICY_VIOLATION, reason="Token must be an access token"
+        )
+
+    user_id = int(payload.sub)
+    stmt = select(User).where(User.id == user_id)
+    result = await db.execute(stmt)
+    user = result.scalar_one_or_none()
+
+    if not user:
+        raise WebSocketException(
+            code=status.WS_1008_POLICY_VIOLATION, reason="User not found"
+        )
+
+    if not user.is_active:
+        raise WebSocketException(
+            code=status.WS_1008_POLICY_VIOLATION, reason="User account is deactivated"
+        )
+
+    return user
+
+
+WsCurrentUser = Annotated[User, Depends(get_current_user_from_websocket)]
 
 
 def get_file_service() -> FileService:

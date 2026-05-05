@@ -22,3 +22,4 @@ redis
 flower
 jinja2
 playwright
+websockets
