@@ -4,14 +4,14 @@ import redis
 from sqlalchemy import select
 
 from src.celery_app import celery_app
-from src.config.app import REDIS_URL
 from src.database import SessionLocal
 from src.enums.websocket_enums import WebsocketStatusEnum, WebsocketTypeEnum
 from src.models.book import Book
 from src.models.job import Job, JobStatusEnum
+from src.settings.settings import app_settings
 
 
-redis_client = redis.Redis.from_url(REDIS_URL)
+redis_client = redis.Redis.from_url(app_settings.redis_url)
 
 
 @celery_app.task(name="parsing_book_task")  # type: ignore[untyped-decorator]

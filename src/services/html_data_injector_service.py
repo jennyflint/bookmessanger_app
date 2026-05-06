@@ -1,4 +1,4 @@
-from src.config.book import STORAGE_HTML_TEMPLATE
+from src.settings.settings import book_settings
 from src.template_manager import TemplateManager
 
 
@@ -8,7 +8,9 @@ class HtmlDataInjectorService:
         self.json_data = json_data
         self.new_title = new_title
 
-        self.template_manager = TemplateManager(STORAGE_HTML_TEMPLATE)
+        self.template_manager = TemplateManager(
+            book_settings.storage / book_settings.storage_html_template
+        )
 
     def main(self) -> str:
         format_data = {

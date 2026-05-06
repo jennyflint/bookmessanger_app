@@ -136,7 +136,9 @@ pydantic==2.13.3
 pydantic-core==2.46.3
     # via pydantic
 pydantic-settings==2.14.0
-    # via authx
+    # via
+    #   -r requirements.in
+    #   authx
 pyee==13.0.1
     # via playwright
 pygments==2.20.0

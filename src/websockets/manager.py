@@ -6,14 +6,14 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, WebSocket
 from redis.asyncio import Redis
 
-from src.config.app import REDIS_URL
+from src.settings.settings import app_settings
 
 
 redis_listener_task = None
 
 
 async def redis_listener() -> None:
-    redis = Redis.from_url(REDIS_URL)
+    redis = Redis.from_url(app_settings.redis_url)
     pubsub = redis.pubsub()
     await pubsub.psubscribe("user_notifications_*")
 

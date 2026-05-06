@@ -1,12 +1,12 @@
 from time import time
 
-from src.config.book import STORAGE_COMPLETE_BOOK
 from src.dependencies import (
     get_converter_service,
 )
 from src.enums.enums import FormatTypeEnum, TemplateTypeEnum
 from src.models.book import Book
 from src.services.html_data_injector_service import HtmlDataInjectorService
+from src.settings.settings import book_settings
 from src.utils.storage import Storage
 
 
@@ -31,7 +31,11 @@ class ConvertBookService:
         )
         html_page = html_data_injector_service.main()
 
-        path_to_complete_file = f"{STORAGE_COMPLETE_BOOK}/{self.user.id}/{self.book.id}"
+        path_to_complete_file = (
+            f"{book_settings.storage}/"
+            f"{book_settings.storage_complete_book}/"
+            f"{self.user.id}/{self.book.id}"
+        )
         filename = f"{int(time())}_{self.book.id}.{self.format_type}"
         self.convert_service.convert(
             content=html_page,

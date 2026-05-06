@@ -4,16 +4,16 @@ import redis
 from sqlalchemy import select
 
 from src.celery_app import celery_app
-from src.config.app import REDIS_URL
 from src.database import SessionLocal
 from src.enums.enums import FormatTypeEnum, TemplateTypeEnum
 from src.enums.websocket_enums import WebsocketStatusEnum, WebsocketTypeEnum
 from src.models.book import Book, CompleteBook
 from src.models.job import Job
 from src.services.convert_book_service import ConvertBookService
+from src.settings.settings import app_settings
 
 
-redis_client = redis.Redis.from_url(REDIS_URL)
+redis_client = redis.Redis.from_url(app_settings.redis_url)
 
 
 @celery_app.task(name="convert_book_task")  # type: ignore[untyped-decorator]
@@ -38,6 +38,7 @@ def convert_book_task(
         if not book:
             return f"Error: Book with ID {job.object_id} not found."
 
+        filename = ""
         try:
             cbs = ConvertBookService(
                 book=book, format_type=format_type, template=template
@@ -48,21 +49,26 @@ def convert_book_task(
             db.add(complete_book)
             db.commit()
 
-            message = {
+            ws_data = {
                 "type": WebsocketTypeEnum.BOOK_CONVERTED,
                 "job_id": job_id,
                 "book_id": book.id,
                 "status": WebsocketStatusEnum.SUCCESS,
                 "message": "Your book has been successfully converted!",
             }
+            res_message = (
+                f"Successfully started processing job {job_id}. Output file: {filename}"
+            )
         except Exception as e:
-            message = {
+            ws_data = {
                 "type": WebsocketTypeEnum.BOOK_CONVERTED,
                 "job_id": job_id,
                 "book_id": book.id,
                 "status": WebsocketStatusEnum.ERROR,
                 "message": str(e),
             }
-        redis_client.publish(f"user_notifications_{book.user_id}", json.dumps(message))
 
-        return f"Successfully started processing job {job_id}. Output file: {filename}"
+            res_message = f"Failed to process job {job_id}. Error: {e!s}"
+        redis_client.publish(f"user_notifications_{book.user_id}", json.dumps(ws_data))
+
+        return res_message

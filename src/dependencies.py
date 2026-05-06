@@ -14,7 +14,6 @@ from fastapi import (
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.config.app import PLAYWRIGHT_WS_ENDPOINT
 from src.database import get_db
 from src.enums.enums import FormatTypeEnum
 from src.models.book import Book
@@ -25,6 +24,7 @@ from src.services.convert_service import ConvertService
 from src.services.converters.convert import PdfConverter
 from src.services.file_service import FileService
 from src.services.module.playwright_pdf_module import PlaywrightPDFGenerator
+from src.settings.settings import app_settings
 from src.validators.file_validator import FileValidator
 
 
@@ -120,7 +120,7 @@ def file_validator_dependency(
 
 
 def get_converter_service() -> ConvertService:
-    playwright_gen = PlaywrightPDFGenerator(PLAYWRIGHT_WS_ENDPOINT)
+    playwright_gen = PlaywrightPDFGenerator(app_settings.playwright_ws_endpoint)
     pdf_converter = PdfConverter(playwright_gen)
     service = ConvertService()
     service.register(FormatTypeEnum.PDF, pdf_converter)

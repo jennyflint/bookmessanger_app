@@ -3,12 +3,12 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException
 from starlette.responses import HTMLResponse
 
-from src.config.book import STORAGE_HTML_TEMPLATE
 from src.dependencies import (
     get_enum_options,
 )
 from src.enums.enums import TemplateTypeEnum
 from src.schema.response.enum_response import EnumOptionResponse
+from src.settings.settings import book_settings
 
 
 router = APIRouter()
@@ -29,7 +29,8 @@ async def get_template_by_type(
 ) -> HTMLResponse:
 
     file_name = f"{template_type}.html"
-    template_path = STORAGE_HTML_TEMPLATE / file_name
+    template_path = book_settings.storage
+    template_path = template_path / book_settings.storage_html_template / file_name
 
     if not template_path.exists():
         raise HTTPException(

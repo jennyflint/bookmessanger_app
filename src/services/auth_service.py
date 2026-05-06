@@ -3,12 +3,12 @@ from datetime import UTC, datetime, timedelta
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.config.auth import REFRESH_TOKEN_EXPIRE_DAYS
 from src.exceptions.auth_exception import EmailAuthError
 from src.exceptions.user_exception import UserInactiveError
 from src.models.user import RefreshToken, User
 from src.schema.response.auth_response import TokenResponse
 from src.security import auth
+from src.settings.settings import auth_settings
 
 
 class AuthService:
@@ -28,7 +28,9 @@ class AuthService:
 
     @staticmethod
     async def save_refresh_token(db: AsyncSession, user_id: int, token: str) -> None:
-        expires_date = datetime.now(UTC) + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
+        expires_date = datetime.now(UTC) + timedelta(
+            days=auth_settings.refresh_token_expire_days
+        )
 
         db_refresh_token = RefreshToken(
             user_id=user_id, token=token, expires_at=expires_date, is_revoked=False

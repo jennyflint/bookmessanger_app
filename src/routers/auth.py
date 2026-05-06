@@ -6,7 +6,6 @@ from fastapi.responses import RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.auth_provider.oauth_provider import oauth
-from src.config.auth import REDIRECT_OAUTH_URI
 from src.database import get_db
 from src.exceptions.auth_exception import EmailAuthError
 from src.exceptions.user_exception import UserInactiveError
@@ -14,6 +13,7 @@ from src.schema.response.auth_response import TokenResponse
 from src.schema.response.error_response import ErrorResponse
 from src.security import auth
 from src.services.auth_service import AuthService
+from src.settings.settings import auth_settings
 
 
 router = APIRouter(prefix="/auth")
@@ -21,7 +21,9 @@ router = APIRouter(prefix="/auth")
 
 @router.get("/login-via-google")
 async def login_via_google(request: Request) -> RedirectResponse:
-    response = await oauth.google.authorize_redirect(request, REDIRECT_OAUTH_URI)
+    response = await oauth.google.authorize_redirect(
+        request, auth_settings.redirect_oauth_uri
+    )
 
     return cast(RedirectResponse, response)
 
