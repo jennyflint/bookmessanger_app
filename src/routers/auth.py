@@ -14,7 +14,7 @@ from src.schema.response.auth_response import TokenResponse
 from src.schema.response.error_response import ErrorResponse
 from src.security import auth
 from src.services.auth_service import AuthService
-from src.settings.settings import auth_settings
+from src.settings.settings import app_settings, auth_settings
 
 
 router = APIRouter(prefix="/auth")
@@ -94,13 +94,14 @@ async def google_callback(
 
     if saved_redirect_url:
         redirect_response = RedirectResponse(url=f"{saved_redirect_url}")
-
+        cookie_domain = app_settings.app_host
         redirect_response.set_cookie(
             key="access_token",
             value=tokens.access_token,
             max_age=auth_settings.access_token_expire_minutes * 60,
             secure=True,
             samesite="lax",
+            domain=cookie_domain,
             httponly=False,
         )
         if tokens.refresh_token:
@@ -110,6 +111,7 @@ async def google_callback(
                 max_age=auth_settings.refresh_token_expire_days * 24 * 60 * 60,
                 secure=True,
                 samesite="lax",
+                domain=cookie_domain,
                 httponly=False,
             )
 
@@ -119,6 +121,7 @@ async def google_callback(
             max_age=auth_settings.refresh_token_expire_days * 24 * 60 * 60,
             secure=True,
             samesite="lax",
+            domain=cookie_domain,
             httponly=False,
         )
 

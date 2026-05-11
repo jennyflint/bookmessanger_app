@@ -7,6 +7,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class AppSettings(BaseSettings):
     redis_url: str = "redis://redis:6379/0"
     playwright_ws_port: str = "3000"
+    app_host: str = "localhost"
 
     @property
     def playwright_ws_endpoint(self) -> str:
