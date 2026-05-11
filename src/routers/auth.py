@@ -54,7 +54,7 @@ async def login_via_google(
     return response
 
 
-@router.get("/callback")
+@router.get("/callback", response_model=None)
 async def google_callback(
     request: Request, response: Response, db: Annotated[AsyncSession, Depends(get_db)]
 ) -> TokenResponse | ErrorResponse | RedirectResponse:
