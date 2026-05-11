@@ -113,6 +113,15 @@ async def google_callback(
                 httponly=False,
             )
 
+        redirect_response.set_cookie(
+            key="user_email",
+            value=user_info.get("email"),
+            max_age=auth_settings.refresh_token_expire_days * 24 * 60 * 60,
+            secure=True,
+            samesite="lax",
+            httponly=False,
+        )
+
         redirect_response.delete_cookie(key="oauth_redirect_to")
         redirect_response.delete_cookie(key="oauth_fallback_url")
 
