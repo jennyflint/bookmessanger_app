@@ -23,6 +23,7 @@ from src.models.book import Book
 from src.models.job import Job, JobStatusEnum
 from src.schema.request.book_request import ConvertBookRequest
 from src.schema.response.book_response import BookDetailResponse, BookResponse
+from src.schema.response.response import PaginatedResponse
 from src.services.book_list_service import BookListService
 from src.services.upload_book_service import UploadBookService
 from src.tasks.convert_book_task import convert_book_task
@@ -108,7 +109,7 @@ async def get_user_books(
     filter_name: Annotated[
         str | None, Query(description="Filter by original_name")
     ] = None,
-) -> list[BookDetailResponse]:
+) -> PaginatedResponse[BookDetailResponse]:
 
     return await book_list_service.get_user_books_with_details(
         limit=limit,

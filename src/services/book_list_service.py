@@ -6,6 +6,7 @@ from src.models.book import Book, CompleteBook
 from src.models.job import Job
 from src.models.user import User
 from src.schema.response.book_response import BookDetailResponse
+from src.schema.response.response import PaginatedResponse, PaginationMeta
 
 
 class BookListService:
@@ -20,7 +21,26 @@ class BookListService:
         sort_by: str = "id",
         sort_desc: bool = True,
         filter_name: str | None = None,
-    ) -> list[BookDetailResponse]:
+    ) -> PaginatedResponse[BookDetailResponse]:
+
+        base_stmt = select(Book).where(Book.user_id == self.current_user.id)
+        if filter_name:
+            base_stmt = base_stmt.where(Book.original_name.ilike(f"%{filter_name}%"))
+
+        count_stmt = select(func.count()).select_from(base_stmt.subquery())
+        total_count_res = await self.db.execute(count_stmt)
+        total_count = total_count_res.scalar() or 0
+
+        order_col = getattr(Book, sort_by, Book.id)
+        books_stmt = (
+            base_stmt.order_by(desc(order_col) if sort_desc else asc(order_col))
+            .limit(limit)
+            .offset(offset)
+        )
+
+        books_subq = books_stmt.subquery("books_subq")
+        book_alias = aliased(Book, books_subq)
+
         cb_rn = (
             func.row_number()
             .over(partition_by=CompleteBook.book_id, order_by=CompleteBook.id.desc())
@@ -39,20 +59,6 @@ class BookListService:
         )
         job_alias = aliased(Job, job_subq)
 
-        books_stmt = select(Book).where(Book.user_id == self.current_user.id)
-
-        if filter_name:
-            books_stmt = books_stmt.where(Book.original_name.ilike(f"%{filter_name}%"))
-
-        order_col = getattr(Book, sort_by, Book.id)
-        books_stmt = books_stmt.order_by(
-            desc(order_col) if sort_desc else asc(order_col)
-        )
-
-        books_stmt = books_stmt.limit(limit).offset(offset)
-        books_subq = books_stmt.subquery("books_subq")
-        book_alias = aliased(Book, books_subq)
-
         stmt = (
             select(book_alias, complete_book_alias, job_alias)
             .outerjoin(
@@ -70,7 +76,6 @@ class BookListService:
         rows = result.all()
 
         books_map: dict[int, BookDetailResponse] = {}
-
         for book_obj, cb_obj, job_obj in rows:
             if book_obj.id not in books_map:
                 books_map[book_obj.id] = BookDetailResponse(
@@ -79,8 +84,10 @@ class BookListService:
                     created_at=book_obj.created_at,
                     updated_at=book_obj.updated_at,
                 )
-
             books_map[book_obj.id].add_complete_book(cb_obj)
             books_map[book_obj.id].add_job(job_obj)
 
-        return list(books_map.values())
+        return PaginatedResponse(
+            data=list(books_map.values()),
+            meta=PaginationMeta(total=total_count, limit=limit, offset=offset),
+        )
