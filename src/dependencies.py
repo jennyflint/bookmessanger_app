@@ -20,6 +20,7 @@ from src.models.book import Book
 from src.models.user import User
 from src.schema.response.enum_response import EnumOptionResponse
 from src.security import auth
+from src.services.book_list_service import BookListService
 from src.services.convert_service import ConvertService
 from src.services.converters.convert import PdfConverter
 from src.services.file_service import FileService
@@ -158,3 +159,10 @@ def get_enum_options(enum_cls: type[Enum]) -> list[EnumOptionResponse]:
         )
         for item in enum_cls
     ]
+
+
+def get_book_list_service(
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> BookListService:
+    return BookListService(db, current_user)

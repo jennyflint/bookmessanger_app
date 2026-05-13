@@ -4,6 +4,7 @@ from fastapi import (
     APIRouter,
     Depends,
     HTTPException,
+    Query,
     Response,
     UploadFile,
 )
@@ -16,11 +17,13 @@ from src.dependencies import (
     CurrentUser,
     file_validator_dependency,
     get_book_if_owner,
+    get_book_list_service,
 )
 from src.models.book import Book
 from src.models.job import Job, JobStatusEnum
 from src.schema.request.book_request import ConvertBookRequest
-from src.schema.response.book_response import BookResponse
+from src.schema.response.book_response import BookDetailResponse, BookResponse
+from src.services.book_list_service import BookListService
 from src.services.upload_book_service import UploadBookService
 from src.tasks.convert_book_task import convert_book_task
 from src.utils.storage import Storage
@@ -89,3 +92,28 @@ async def get_book_model(
         return Response(content=json_data, media_type="application/json")
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e)) from e
+
+
+@router.get("/list")
+async def get_user_books(
+    book_list_service: Annotated[BookListService, Depends(get_book_list_service)],
+    limit: Annotated[
+        int, Query(ge=1, le=100, description="Quantity of books per page")
+    ] = 20,
+    offset: Annotated[int, Query(ge=0, description="Offset for pagination")] = 0,
+    sort_by: Annotated[
+        str, Query(description="Field for sorting (id, original_name, created_at)")
+    ] = "id",
+    sort_desc: Annotated[bool, Query(description="Sort in descending order?")] = True,
+    filter_name: Annotated[
+        str | None, Query(description="Filter by original_name")
+    ] = None,
+) -> list[BookDetailResponse]:
+
+    return await book_list_service.get_user_books_with_details(
+        limit=limit,
+        offset=offset,
+        sort_by=sort_by,
+        sort_desc=sort_desc,
+        filter_name=filter_name,
+    )
