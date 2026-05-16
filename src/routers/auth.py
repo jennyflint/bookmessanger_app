@@ -1,15 +1,18 @@
-from typing import Annotated, cast
-from urllib.parse import urlencode
+import json
+from typing import Annotated, Any, cast
+from urllib.parse import quote, urlencode
 
 from authx import TokenPayload
 from fastapi import APIRouter, Depends, Request, Response, status
 from fastapi.responses import RedirectResponse
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.auth_provider.oauth_provider import oauth
 from src.database import get_db
 from src.exceptions.auth_exception import EmailAuthError
 from src.exceptions.user_exception import UserInactiveError
+from src.models.user import User
 from src.schema.response.auth_response import TokenResponse
 from src.schema.response.error_response import ErrorResponse
 from src.security import auth
@@ -32,6 +35,10 @@ async def login_via_google(
     )
 
     response = cast(RedirectResponse, response)
+
+    response.delete_cookie(key="oauth_redirect_to")
+    response.delete_cookie(key="oauth_fallback_url")
+
     if redirect_url:
         response.set_cookie(
             key="oauth_redirect_to",
@@ -58,79 +65,82 @@ async def login_via_google(
 async def google_callback(
     request: Request, response: Response, db: Annotated[AsyncSession, Depends(get_db)]
 ) -> TokenResponse | ErrorResponse | RedirectResponse:
-    token = await oauth.google.authorize_access_token(request)
-    user_info = token.get("userinfo")
 
     fallback_redirect_url = request.cookies.get("oauth_fallback_url")
-    if not user_info:
+
+    def handle_auth_error(
+        error_code: str, status_code: int = status.HTTP_400_BAD_REQUEST
+    ) -> ErrorResponse | RedirectResponse:
+        response.status_code = status_code
         if fallback_redirect_url:
-            error_query = urlencode({"error": "USER_INFO_NOT_FOUND"})
+            error_query = urlencode({"error": error_code})
             return RedirectResponse(url=f"{fallback_redirect_url}?{error_query}")
-        else:
-            return ErrorResponse(
-                error="USER_INFO_NOT_FOUND", type="USER_INFO_NOT_FOUND"
-            )
+        return ErrorResponse(error=error_code, type=error_code)
+
+    token = await oauth.google.authorize_access_token(request)
+    user_info = token.get("userinfo", {})
+    email = user_info.get("email")
+
+    if not email:
+        return handle_auth_error("USER_INFO_NOT_FOUND")
+
+    stmt = select(User).where(User.email == email)
+    user = (await db.execute(stmt)).scalar_one_or_none()
+
+    if not user:
+        return handle_auth_error("USER_NOT_FOUND")
 
     try:
         tokens = await AuthService.generate_authx_tokens(db, user_info)
     except EmailAuthError:
-        response.status_code = status.HTTP_401_UNAUTHORIZED
-        if fallback_redirect_url:
-            error_query = urlencode({"error": "EMAIL_AUTH_REQUIRED"})
-            return RedirectResponse(url=f"{fallback_redirect_url}?{error_query}")
-        else:
-            return ErrorResponse(
-                error="EMAIL_AUTH_REQUIRED", type="EMAIL_AUTH_REQUIRED"
-            )
+        return handle_auth_error("EMAIL_AUTH_REQUIRED", status.HTTP_401_UNAUTHORIZED)
     except UserInactiveError as e:
-        response.status_code = status.HTTP_403_FORBIDDEN
-        if fallback_redirect_url:
-            error_query = urlencode({"error": "USER_INACTIVE"})
-            return RedirectResponse(url=f"{fallback_redirect_url}?{error_query}")
-        else:
-            return ErrorResponse(error=str(e), type="USER_INACTIVE")
+        return handle_auth_error(
+            str(e) if str(e) else "USER_INACTIVE", status.HTTP_403_FORBIDDEN
+        )
 
     saved_redirect_url = request.cookies.get("oauth_redirect_to")
-
-    if saved_redirect_url:
-        redirect_response = RedirectResponse(url=f"{saved_redirect_url}")
-        cookie_domain = app_settings.app_host
-        redirect_response.set_cookie(
-            key="access_token",
-            value=tokens.access_token,
-            max_age=auth_settings.access_token_expire_minutes * 60,
-            secure=True,
-            samesite="lax",
-            domain=cookie_domain,
-            httponly=False,
-        )
-        if tokens.refresh_token:
-            redirect_response.set_cookie(
-                key="refresh_token",
-                value=tokens.refresh_token,
-                max_age=auth_settings.refresh_token_expire_days * 24 * 60 * 60,
-                secure=True,
-                samesite="lax",
-                domain=cookie_domain,
-                httponly=False,
-            )
-
-        redirect_response.set_cookie(
-            key="user_email",
-            value=user_info.get("email"),
-            max_age=auth_settings.refresh_token_expire_days * 24 * 60 * 60,
-            secure=True,
-            samesite="lax",
-            domain=cookie_domain,
-            httponly=False,
-        )
-
-        redirect_response.delete_cookie(key="oauth_redirect_to")
-        redirect_response.delete_cookie(key="oauth_fallback_url")
-
-        return redirect_response
-    else:
+    if not saved_redirect_url:
         return tokens
+
+    redirect_response = RedirectResponse(url=saved_redirect_url)
+    cookie_domain = app_settings.app_host
+
+    base_cookie_kwargs: dict[str, Any] = {
+        "secure": True,
+        "samesite": "lax",
+        "domain": cookie_domain,
+        "httponly": False,
+    }
+
+    redirect_response.set_cookie(
+        key="access_token",
+        value=tokens.access_token,
+        max_age=auth_settings.access_token_expire_minutes * 60,
+        **base_cookie_kwargs,
+    )
+
+    if tokens.refresh_token:
+        refresh_max_age = auth_settings.refresh_token_expire_days * 24 * 60 * 60
+        redirect_response.set_cookie(
+            key="refresh_token",
+            value=tokens.refresh_token,
+            max_age=refresh_max_age,
+            **base_cookie_kwargs,
+        )
+
+        user_data_str = json.dumps({"id": user.id, "email": user.email})
+        redirect_response.set_cookie(
+            key="user_data",
+            value=quote(user_data_str),
+            max_age=refresh_max_age,
+            **base_cookie_kwargs,
+        )
+
+    redirect_response.delete_cookie(key="oauth_redirect_to")
+    redirect_response.delete_cookie(key="oauth_fallback_url")
+
+    return redirect_response
 
 
 @router.post("/refresh/token")
