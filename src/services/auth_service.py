@@ -6,7 +6,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.exceptions.auth_exception import EmailAuthError
 from src.exceptions.user_exception import UserInactiveError
 from src.models.user import RefreshToken, User
-from src.schema.response.auth_response import TokenResponse
 from src.security import auth
 from src.settings.settings import auth_settings
 
@@ -41,7 +40,7 @@ class AuthService:
     @classmethod
     async def generate_authx_tokens(
         cls, db: AsyncSession, user_info: dict[str, str]
-    ) -> TokenResponse:
+    ) -> tuple[User, str, str]:
         email = user_info.get("email")
 
         if not email:
@@ -61,4 +60,4 @@ class AuthService:
         # Save refresh_token in the database
         await cls.save_refresh_token(db, user.id, refresh_token)
 
-        return TokenResponse(access_token=access_token, refresh_token=refresh_token)
+        return user, access_token, refresh_token

@@ -5,14 +5,12 @@ from urllib.parse import quote, urlencode
 from authx import TokenPayload
 from fastapi import APIRouter, Depends, Request, Response, status
 from fastapi.responses import RedirectResponse
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.auth_provider.oauth_provider import oauth
 from src.database import get_db
 from src.exceptions.auth_exception import EmailAuthError
 from src.exceptions.user_exception import UserInactiveError
-from src.models.user import User
 from src.schema.response.auth_response import TokenResponse
 from src.schema.response.error_response import ErrorResponse
 from src.security import auth
@@ -67,6 +65,7 @@ async def google_callback(
 ) -> TokenResponse | ErrorResponse | RedirectResponse:
 
     fallback_redirect_url = request.cookies.get("oauth_fallback_url")
+    response.delete_cookie(key="user_data")
 
     def handle_auth_error(
         error_code: str, status_code: int = status.HTTP_400_BAD_REQUEST
@@ -84,14 +83,10 @@ async def google_callback(
     if not email:
         return handle_auth_error("USER_INFO_NOT_FOUND")
 
-    stmt = select(User).where(User.email == email)
-    user = (await db.execute(stmt)).scalar_one_or_none()
-
-    if not user:
-        return handle_auth_error("USER_NOT_FOUND")
-
     try:
-        tokens = await AuthService.generate_authx_tokens(db, user_info)
+        user, access_token, refresh_token = await AuthService.generate_authx_tokens(
+            db, user_info
+        )
     except EmailAuthError:
         return handle_auth_error("EMAIL_AUTH_REQUIRED", status.HTTP_401_UNAUTHORIZED)
     except UserInactiveError as e:
@@ -101,7 +96,7 @@ async def google_callback(
 
     saved_redirect_url = request.cookies.get("oauth_redirect_to")
     if not saved_redirect_url:
-        return tokens
+        return TokenResponse(access_token=access_token, refresh_token=refresh_token)
 
     redirect_response = RedirectResponse(url=saved_redirect_url)
     cookie_domain = app_settings.app_host
@@ -115,16 +110,16 @@ async def google_callback(
 
     redirect_response.set_cookie(
         key="access_token",
-        value=tokens.access_token,
+        value=access_token,
         max_age=auth_settings.access_token_expire_minutes * 60,
         **base_cookie_kwargs,
     )
 
-    if tokens.refresh_token:
+    if refresh_token:
         refresh_max_age = auth_settings.refresh_token_expire_days * 24 * 60 * 60
         redirect_response.set_cookie(
             key="refresh_token",
-            value=tokens.refresh_token,
+            value=refresh_token,
             max_age=refresh_max_age,
             **base_cookie_kwargs,
         )

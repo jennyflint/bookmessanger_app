@@ -33,12 +33,10 @@ class UploadBookService:
         await self.db.refresh(book)
 
         sub_path = f"{book_settings.storage_book_upload_dir}/{user_id}"
-        print(sub_path)
         filename = f"{book_settings.prefix_book_name}{book.id}"
         filename = filename + Path(file.filename).suffix.lower()
 
         await self.file_service.save(file=file, sub_path=sub_path, filename=filename)
-
         await self._create_job(book)
 
         return book

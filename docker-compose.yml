@@ -13,6 +13,8 @@ services:
       - REDIS_URL=redis://redis:6379/0
     volumes:
       - .:/app
+      - /var/www/bookmessanger_storage/model_books:/app/storage/model_books/
+      - /var/www/bookmessanger_storage/upload_books:/app/storage/upload_books/
     depends_on:
       db:
         condition: service_healthy

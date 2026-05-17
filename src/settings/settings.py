@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import Literal
 
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -17,21 +18,7 @@ class AppSettings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 
-AlgorithmType = Literal[
-    "HS256",
-    "HS384",
-    "HS512",
-    "ES256",
-    "ES256K",
-    "ES384",
-    "ES512",
-    "RS256",
-    "RS384",
-    "RS512",
-    "PS256",
-    "PS384",
-    "PS512",
-]
+AlgorithmType = Literal["HS256",]
 
 
 class AuthSettings(BaseSettings):
@@ -64,11 +51,11 @@ class BookSettings(BaseSettings):
 
     @property
     def storage_book_upload_dir(self) -> Path:
-        return Path("uploads") / "books" / "users"
+        return Path("/app") / "storage" / "upload_books"
 
     @property
     def storage_model_book_dir(self) -> Path:
-        return Path("books") / "models" / "json"
+        return Path("/app") / "storage" / "model_books" / "json"
 
     @property
     def storage_html_template(self) -> Path:
@@ -110,7 +97,25 @@ class DatabaseSettings(BaseSettings):
     )
 
 
+class CliParsingBookScript:
+    parsing_book_command = Field(default="", validation_alias="PARSING_BOOK_COMMAND")
+
+    def command_parsing_book(self, path_to_book: str, path_to_save: str) -> list[str]:
+        ready_command = [
+            item.replace("{{input_file}}", path_to_book).replace(
+                "{{output_file}}", path_to_save
+            )
+            for item in self.parsing_book_command
+        ]
+        return ready_command
+
+    model_config = SettingsConfigDict(
+        env_file=".env", extra="ignore", env_ignore_empty=True
+    )
+
+
 db_settings = DatabaseSettings()
 book_settings = BookSettings()
 app_settings = AppSettings()
 auth_settings = AuthSettings()
+cli_parsing_book_script = CliParsingBookScript()

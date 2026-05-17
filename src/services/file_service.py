@@ -9,14 +9,17 @@ from src.schema.response.file_upload_response import FileUploadResponse
 
 
 class FileService:
-    def __init__(self, base_dir: str = "storage/"):
-        self.base_dir = base_dir
+    def __init__(self) -> None:
+        self.base_dir = ""
 
     def _ensure_dir(self, path: Path | str) -> None:
         Path(path).mkdir(parents=True, exist_ok=True)
 
     def _generate_filename(self, ext: str) -> str:
         return f"{uuid.uuid4()}{ext}"
+
+    def set_base_dir(self, base_dir: str) -> None:
+        self.base_dir = base_dir
 
     async def save(
         self,

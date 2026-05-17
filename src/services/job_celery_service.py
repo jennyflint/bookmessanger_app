@@ -1,7 +1,6 @@
 import json
 from collections.abc import Callable
-from dataclasses import dataclass
-from typing import Any
+from typing import Any, TypeVar
 
 import redis
 from sqlalchemy import Select, select
@@ -13,22 +12,34 @@ from src.models.job import Job, JobStatusEnum
 from src.settings.settings import app_settings
 
 
-@dataclass
-class TaskResult:
-    message: str
-    channel: str | None = None
-    ws_data: dict[str, Any] | None = None
+T = TypeVar("T")
 
 
 class JobCeleryService:
-    def __init__(self, job_id: int, is_publish: bool = False) -> None:
+    job: Job
+
+    def __init__(
+        self,
+        job_id: int,
+        is_publish: bool = False,
+    ) -> None:
         self.job_id = job_id
         self.is_publish = is_publish
 
+        self._create_initial()
         self.redis_client: redis.Redis | None = None
 
         if self.is_publish:
             self._create_redis_client()
+
+    def _create_initial(self) -> None:
+        with SessionLocal() as db:
+            self._find_job_by_id(db)
+            self._find_target_entity(db, self.job.object_table, self.job.object_id)
+
+    def add_websocket_channel(self, channel: str, ws_data: dict[str, Any]) -> None:
+        self.channel = channel
+        self.ws_data = ws_data
 
     def _create_redis_client(self) -> None:
         self.redis_client = redis.Redis.from_url(app_settings.redis_url)
@@ -37,14 +48,18 @@ class JobCeleryService:
         if self.redis_client and channel:
             self.redis_client.publish(channel, json.dumps(ws_data))
 
-    def _get_job_by_id(self, db: Session, job_id: int) -> Job | None:
-        stmt: Select[tuple[Job]] = select(Job).where(Job.id == job_id)
+    def _find_job_by_id(self, db: Session) -> None:
+        stmt: Select[tuple[Job]] = select(Job).where(Job.id == self.job_id)
         result = db.execute(stmt)
-        return result.scalar_one_or_none()
+        job = result.scalar_one_or_none()
 
-    def _get_target_entity(
+        if not job:
+            raise JobNotFoundError(self.job_id)
+        self.job = job
+
+    def _find_target_entity(
         self, db: Session, object_table: str, object_id: int
-    ) -> Any | None:
+    ) -> None:
         target_model = self._get_model_by_table_name(object_table)
 
         if not target_model:
@@ -58,7 +73,7 @@ class JobCeleryService:
         )
 
         result = db.execute(stmt)
-        return result.scalar_one_or_none()
+        self.target_object = result.scalar_one_or_none()
 
     def _get_model_by_table_name(self, table_name: str) -> type[Any] | None:
         for mapper_obj in Base.registry.mappers:
@@ -66,38 +81,55 @@ class JobCeleryService:
                 return mapper_obj.class_
         return None
 
+    def _update_job_status(self, db: Session, job: Job, status: JobStatusEnum) -> None:
+        job.status = status
+        db.commit()
+
+        if self.is_publish and self.channel and self.ws_data:
+            clone_ws_data = self.ws_data.copy()
+            clone_ws_data["status"] = status.value
+
+            self._redis_publish(self.channel, clone_ws_data)
+
+    def get_target_object_after_verify(self, expected_type: type[T]) -> T:
+        obj = self.target_object
+        if not isinstance(obj, expected_type):
+            err_msg = (
+                f"Expected object to be of type {expected_type.__name__}, "
+                f"got {type(obj).__name__}"
+            )
+            raise TypeError(err_msg)
+        return obj
+
+    def get_job(self) -> Job | None:
+        return self.job
+
     def main(
         self,
-        celery_task: Callable[..., TaskResult],
+        celery_task: Callable[..., bool],
         **kwargs: Any,
     ) -> str:
         with SessionLocal() as db:
-            job = self._get_job_by_id(db, self.job_id)
-            if not job:
-                raise JobNotFoundError(self.job_id)
+            self._update_job_status(db, self.job, JobStatusEnum.PROCESSING)
 
-            job.status = JobStatusEnum.PROCESSING
-            db.commit()
-
-            target_object = self._get_target_entity(db, job.object_table, job.object_id)
-            if not target_object:
-                raise JobObjectTableNotFoundError(job.object_table, job.object_id)
+            if not self.target_object:
+                raise JobObjectTableNotFoundError(
+                    self.job.object_table, self.job.object_id
+                )
 
             res_message = ""
             try:
-                task_result: TaskResult = celery_task(db, job, target_object, **kwargs)
-                res_message = task_result.message
-                job.status = JobStatusEnum.COMPLETED
-                db.commit()
+                is_success = celery_task(db, **kwargs)
 
-                if self.is_publish and task_result.channel and task_result.ws_data:
-                    self._redis_publish(task_result.channel, task_result.ws_data)
-
+                self._update_job_status(
+                    db,
+                    self.job,
+                    JobStatusEnum.COMPLETED if is_success else JobStatusEnum.FAILED,
+                )
             except Exception as e:
                 db.rollback()
 
-                job.status = JobStatusEnum.FAILED
-                db.commit()
+                self._update_job_status(db, self.job, JobStatusEnum.FAILED)
                 res_message = f"Failed to process job {self.job_id}: Error -> {e!s}"
 
             return res_message
