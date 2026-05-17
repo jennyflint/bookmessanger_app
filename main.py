@@ -39,7 +39,7 @@ api_router.include_router(
     template_router, prefix="/template", dependencies=[Depends(get_current_user)]
 )
 
-api_router.include_router(
+app.include_router(
     websocket_router,
     prefix="/ws",
     dependencies=[Depends(get_current_user_from_websocket)],
