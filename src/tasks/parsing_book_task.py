@@ -1,4 +1,3 @@
-import subprocess
 from pathlib import Path
 
 from sqlalchemy.orm import Session
@@ -6,8 +5,8 @@ from sqlalchemy.orm import Session
 from src.celery_app import celery_app
 from src.enums.websocket_enums import WebsocketTypeEnum
 from src.models.book import Book
+from src.services.cli_parsing_book_service import CliParsingBookService
 from src.services.job_celery_service import JobCeleryService
-from src.settings.settings import book_settings, cli_parsing_book_script
 
 
 @celery_app.task(name="parsing_book_task")  # type: ignore[untyped-decorator]
@@ -24,21 +23,24 @@ def parsing_book_task(job_id: int) -> str:
 
 
 def parsing_task(_db: Session, book: Book) -> bool:
-    bookname = str(book.id) + Path(book.original_name).suffix
-    user_upload_dir = book_settings.storage_book_upload_dir / str(book.user_id)
-    user_model_dir = book_settings.storage_model_book_dir / str(book.user_id)
+    bookname = "book_" + str(book.id) + Path(book.original_name).suffix
+    user_upload_dir = Path(str(book.user_id))
+    user_model_dir = Path(str(book.user_id))
     input_file = str(user_upload_dir / bookname)
     output_file = str((user_model_dir / str(book.id)).with_suffix(".json"))
     try:
-        subprocess.run(  # noqa: S603
-            cli_parsing_book_script.command_parsing_book(input_file, output_file),
-            capture_output=True,
-            text=True,
-            shell=False,
-            check=True,
+        print(8)
+        celery_app.send_task(
+            "parsing.book",
+            args=[
+                CliParsingBookService.default_command_parsing_book(
+                    input_file, output_file
+                )
+            ],
+            queue="cli_tasks",
         )
-
-    except subprocess.CalledProcessError:
+    except Exception as e:
+        print(e)
         return False
     else:
         return True

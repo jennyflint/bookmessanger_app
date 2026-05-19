@@ -1,7 +1,6 @@
 from pathlib import Path
 from typing import Literal
 
-from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -97,27 +96,7 @@ class DatabaseSettings(BaseSettings):
     )
 
 
-class CliParsingBookScript(BaseSettings):
-    parsing_book_command: list[str] = Field(
-        default_factory=list, validation_alias="PARSING_BOOK_COMMAND"
-    )
-
-    def command_parsing_book(self, path_to_book: str, path_to_save: str) -> list[str]:
-        ready_command = [
-            item.replace("{{input_file}}", path_to_book).replace(
-                "{{output_file}}", path_to_save
-            )
-            for item in self.parsing_book_command
-        ]
-        return ready_command
-
-    model_config = SettingsConfigDict(
-        env_file=".env", extra="ignore", env_ignore_empty=True
-    )
-
-
 db_settings = DatabaseSettings()
 book_settings = BookSettings()
 app_settings = AppSettings()
 auth_settings = AuthSettings()
-cli_parsing_book_script = CliParsingBookScript()
