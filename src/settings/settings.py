@@ -97,8 +97,10 @@ class DatabaseSettings(BaseSettings):
     )
 
 
-class CliParsingBookScript:
-    parsing_book_command = Field(default="", validation_alias="PARSING_BOOK_COMMAND")
+class CliParsingBookScript(BaseSettings):
+    parsing_book_command: list[str] = Field(
+        default_factory=list, validation_alias="PARSING_BOOK_COMMAND"
+    )
 
     def command_parsing_book(self, path_to_book: str, path_to_save: str) -> list[str]:
         ready_command = [
