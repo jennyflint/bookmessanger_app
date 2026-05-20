@@ -19,13 +19,11 @@ class JobCeleryService:
     job: Job
 
     def __init__(
-        self,
-        job_id: int,
-        is_publish: bool = False,
+        self, job_id: int, is_publish: bool = False, is_callback: bool = False
     ) -> None:
         self.job_id = job_id
         self.is_publish = is_publish
-
+        self.is_callback = is_callback
         self._create_initial()
         self.redis_client: redis.Redis | None = None
 
@@ -110,26 +108,26 @@ class JobCeleryService:
         **kwargs: Any,
     ) -> str:
         with SessionLocal() as db:
-            self._update_job_status(db, self.job, JobStatusEnum.PROCESSING)
+            job = db.merge(self.job)
+            self._update_job_status(db, job, JobStatusEnum.PROCESSING)
 
             if not self.target_object:
-                raise JobObjectTableNotFoundError(
-                    self.job.object_table, self.job.object_id
-                )
+                raise JobObjectTableNotFoundError(job.object_table, job.object_id)
 
             res_message = ""
             try:
                 is_success = celery_task(db, **kwargs)
 
-                self._update_job_status(
-                    db,
-                    self.job,
-                    JobStatusEnum.COMPLETED if is_success else JobStatusEnum.FAILED,
-                )
+                if not self.is_callback or not is_success:
+                    self._update_job_status(
+                        db,
+                        job,
+                        JobStatusEnum.COMPLETED if is_success else JobStatusEnum.FAILED,
+                    )
             except Exception as e:
                 db.rollback()
 
-                self._update_job_status(db, self.job, JobStatusEnum.FAILED)
+                self._update_job_status(db, job, JobStatusEnum.FAILED)
                 res_message = f"Failed to process job {self.job_id}: Error -> {e!s}"
 
             return res_message

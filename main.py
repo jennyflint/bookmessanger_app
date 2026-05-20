@@ -1,7 +1,9 @@
 import os
 
-from fastapi import APIRouter, Depends, FastAPI
+from authx.exceptions import AuthXException, JWTDecodeError
+from fastapi import APIRouter, Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from starlette.middleware.sessions import SessionMiddleware
 
 from src.dependencies import get_current_user, get_current_user_from_websocket
@@ -9,12 +11,25 @@ from src.routers.auth import router as auth_router
 from src.routers.book import router as book_router
 from src.routers.template import router as template_router
 from src.routers.websockets import router as websocket_router
-from src.security import auth
 from src.settings.settings import app_settings, auth_settings
 from src.websockets.manager import lifespan
 
 
 app = FastAPI(lifespan=lifespan)
+
+
+@app.exception_handler(JWTDecodeError)
+@app.exception_handler(AuthXException)
+async def authx_exception_handler(_request: Request, exc: Exception) -> JSONResponse:
+    return JSONResponse(
+        status_code=401,
+        content={
+            "message": "Invalid or expired token",
+            "error_type": exc.__class__.__name__,
+            "details": str(exc),
+        },
+    )
+
 
 app.add_middleware(SessionMiddleware, secret_key=auth_settings.session_secret_key)
 
@@ -25,8 +40,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-auth.handle_errors(app)
 
 api_router = APIRouter(prefix="/api/v1")
 
