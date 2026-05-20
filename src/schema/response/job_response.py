@@ -2,13 +2,12 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict
 
+from src.models.job import JobStatusEnum
+
 
 class JobResponse(BaseModel):
     id: int
-    object_id: int
-    object_table: str
-    count_attempts: int
-    created_at: datetime
+    status: JobStatusEnum
     updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
