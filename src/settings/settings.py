@@ -54,7 +54,7 @@ class BookSettings(BaseSettings):
 
     @property
     def storage_model_book_dir(self) -> Path:
-        return Path("/app") / "storage" / "model_books" / "json"
+        return Path("/app") / "storage" / "model_books"
 
     @property
     def storage_html_template(self) -> Path:

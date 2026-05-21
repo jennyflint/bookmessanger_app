@@ -10,7 +10,7 @@ class Storage:
     def get_book_model_by_book(book: Book) -> str:
         path = book_settings.storage
         path = path / book_settings.storage_model_book_dir
-        path = path / str(book.user.id) / str(book.id) / f"{book.id}.json"
+        path = path / str(book.user.id) / f"{book.id}.json"
         return Storage._read_file(str(path))
 
     @staticmethod
