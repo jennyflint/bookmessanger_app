@@ -1,13 +1,16 @@
 import os
+from pathlib import Path
 
 from authx.exceptions import AuthXException, JWTDecodeError
 from fastapi import APIRouter, Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 
 from src.dependencies import get_current_user, get_current_user_from_websocket
 from src.routers.auth import router as auth_router
+from src.routers.avatar import router as avatar_router
 from src.routers.book import router as book_router
 from src.routers.template import router as template_router
 from src.routers.websockets import router as websocket_router
@@ -16,6 +19,11 @@ from src.websockets.manager import lifespan
 
 
 app = FastAPI(lifespan=lifespan)
+
+AVATARS_DIR = Path("storage/characters/avatars")
+
+AVATARS_DIR.mkdir(parents=True, exist_ok=True)
+app.mount("/static/avatars", StaticFiles(directory=AVATARS_DIR), name="avatars")
 
 
 @app.exception_handler(JWTDecodeError)
@@ -52,12 +60,18 @@ api_router.include_router(
     template_router, prefix="/template", dependencies=[Depends(get_current_user)]
 )
 
+api_router.include_router(
+    avatar_router, prefix="/avatar", dependencies=[Depends(get_current_user)]
+)
+
+app.include_router(api_router)
+
+
 app.include_router(
     websocket_router,
     prefix="/ws",
     dependencies=[Depends(get_current_user_from_websocket)],
 )
-app.include_router(api_router)
 
 
 @app.get("/")

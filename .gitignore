@@ -21,3 +21,4 @@ alembic.ini
 #storage > books/models
 /storage/books/models/
 /storage/books/complete/
+/storage/characters/avatars/

@@ -1,0 +1,50 @@
+import time
+
+import requests
+import typer
+
+from src.services.storage_avatar_service import StorageAvatarService
+
+
+SIZE = 128
+FILE_FORMAT = "svg"
+
+
+def download_avatars(count: int = 100, style: str = "adventurer") -> None:
+
+    storage_service = StorageAvatarService()
+
+    for _i in range(count):
+        ts = int(time.time())
+        seed = f"{style}_{ts}"
+        url = (
+            f"https://api.dicebear.com/9.x/"
+            f"{style}/{FILE_FORMAT}?seed={seed}&size={SIZE}"
+        )
+
+        response = requests.get(url, timeout=10)
+
+        if response.status_code == 200:
+            storage_service.save(f"{seed}.{FILE_FORMAT}", response.content, style)
+            typer.echo(f"Downloaded {seed}.{FILE_FORMAT}")
+        else:
+            typer.echo(f"Error {seed}.{FILE_FORMAT}")
+        time.sleep(0.1)
+
+
+def download_multiple_avatars(count: int = 100) -> None:
+    styles = (
+        "adventurer",
+        "avataaars",
+        "big-ears",
+        "big-smile",
+        "bottts",
+        "croodles",
+        "micah",
+        "miniavs",
+        "open-peeps",
+        "personas",
+        "pixel-art",
+    )
+    for style in styles:
+        download_avatars(count, style)

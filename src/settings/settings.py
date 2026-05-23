@@ -96,7 +96,12 @@ class DatabaseSettings(BaseSettings):
     )
 
 
+class CharacterAvatar(BaseSettings):
+    avatar_dir: Path = Path("storage/characters/avatars")
+
+
 db_settings = DatabaseSettings()
 book_settings = BookSettings()
 app_settings = AppSettings()
 auth_settings = AuthSettings()
+character_avatar_settings = CharacterAvatar()

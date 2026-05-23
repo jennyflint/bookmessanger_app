@@ -24,3 +24,5 @@ jinja2
 playwright
 websockets
 pydantic-settings
+typer[all]
+requests
