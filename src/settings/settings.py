@@ -8,6 +8,7 @@ class AppSettings(BaseSettings):
     redis_url: str = "redis://redis:6379/0"
     playwright_ws_port: str = "3000"
     app_host: str = "localhost"
+    app_url: str = ""
     cors_origin_urls: list[str] = []
 
     @property

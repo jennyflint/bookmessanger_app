@@ -5,6 +5,7 @@ from fastapi import APIRouter, HTTPException
 from starlette import status
 
 from src.schema.response.avatar import AvatarListResponse
+from src.settings.settings import app_settings
 
 
 router = APIRouter()
@@ -31,8 +32,9 @@ def get_random_avatars(limit: int = 30) -> AvatarListResponse:
     sample_size = min(limit, len(all_avatars))
     random_avatars = random.sample(all_avatars, sample_size)
 
+    app_url = app_settings.app_url
     result = [
-        f"/static/avatars/{path.relative_to(AVATARS_DIR).as_posix()}"
+        f"{app_url}/static/avatars/{path.relative_to(AVATARS_DIR).as_posix()}"
         for path in random_avatars
     ]
 
