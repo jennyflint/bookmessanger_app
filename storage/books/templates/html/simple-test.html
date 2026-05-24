@@ -57,6 +57,13 @@ body {
     margin: 0 12px;
     box-shadow: 2px 2px 0 #000;
     flex-shrink: 0;
+    overflow: hidden;
+}
+
+.avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .bubble {
@@ -87,6 +94,7 @@ body {
     margin-top: 8px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    margin-bottom: 4px;
 }
 
 .system {
@@ -156,7 +164,7 @@ function getColor(id) {
     return colors[id % colors.length];
 }
 
-function avatar(id) {
+function getFallbackEmoji(id) {
     const icons = ["👽", "🧑‍🚀", "🤖", "🧔", "🦖", "🌟", "👾", "🧙‍♂️", "👻"];
     return icons[id % icons.length];
 }
@@ -186,14 +194,25 @@ function getRandomReactions() {
     return div;
 }
 
-function createMessage({ text, name, isRight, color, metaText, authorId }) {
+function createMessage({ text, name, isRight, color, metaText, authorId, avatarUrl }) {
     const div = document.createElement("div");
     div.className = "msg " + (isRight ? "right" : "left");
 
     const av = document.createElement("div");
     av.className = "avatar";
-    av.textContent = avatar(authorId);
     av.style.borderColor = color;
+
+    if (avatarUrl) {
+        const img = document.createElement("img");
+        img.src = avatarUrl;
+        img.alt = name;
+        img.onerror = function() {
+            av.textContent = getFallbackEmoji(authorId);
+        };
+        av.appendChild(img);
+    } else {
+        av.textContent = getFallbackEmoji(authorId);
+    }
 
     const col = document.createElement("div");
     col.className = "msg-col";
@@ -221,10 +240,9 @@ function createMessage({ text, name, isRight, color, metaText, authorId }) {
     nameDiv.className = "name";
     nameDiv.textContent = name;
     nameDiv.style.color = color;
-
+    
     col.appendChild(nameDiv);
     col.appendChild(bubble);
-    
 
     if (isRight) {
         div.appendChild(col);
@@ -247,16 +265,18 @@ function render(line) {
 
     let aId = line.author_id;
     let name = "Невідомий";
+    let avatarUrl = null;
     
     if (aId !== null) {
         const char = charMap.get(aId);
         name = char?.name || "Невідомий";
+        avatarUrl = char?.avatar || null;
     } else {
         aId = 999;
     }
 
     const color = getColor(aId);
-    const isRight = aId === 1;
+    const isRight = (aId % 2 === 0);
 
     const messages = [];
 
@@ -268,7 +288,8 @@ function render(line) {
                 isRight,
                 color,
                 metaText: line.parts[1]?.trim(),
-                authorId: aId
+                authorId: aId,
+                avatarUrl
             })
         );
 
@@ -282,7 +303,8 @@ function render(line) {
                     name,
                     isRight,
                     color,
-                    authorId: aId
+                    authorId: aId,
+                    avatarUrl
                 })
             );
         }
@@ -293,7 +315,8 @@ function render(line) {
                 name,
                 isRight,
                 color,
-                authorId: aId
+                authorId: aId,
+                avatarUrl
             })
         );
     }
