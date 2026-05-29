@@ -1,3 +1,4 @@
+import json
 from typing import Annotated
 
 from fastapi import (
@@ -19,12 +20,14 @@ from src.dependencies import (
     get_book_if_owner,
     get_book_list_service,
 )
+from src.exceptions.validate_book_model_exception import ModelBookValidatorError
 from src.models.book import Book
 from src.models.job import Job, JobStatusEnum
 from src.schema.request.book_request import ConvertBookRequest
 from src.schema.response.book_response import BookDetailResponse, BookResponse
 from src.schema.response.response import PaginatedResponse
 from src.services.book_list_service import BookListService
+from src.services.book_model.model_validator import ModelValidator
 from src.services.upload_book_service import UploadBookService
 from src.tasks.convert_book_task import convert_book_task
 from src.utils.storage import Storage
@@ -74,6 +77,21 @@ async def convert_book(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Book convert failed"
         )
+
+    book_model = json.loads(Storage.get_book_model_by_book(book))
+
+    if not book_model:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Book model not found"
+        )
+
+    try:
+        validator = ModelValidator(book_model, request.characters)
+        validator.validate()
+    except ModelBookValidatorError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
+        ) from e
 
     convert_book_task.delay(job.id, request.format, request.template)
 
