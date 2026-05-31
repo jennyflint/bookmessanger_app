@@ -38,6 +38,9 @@ def convert_task(
     template: TemplateTypeEnum,
 ) -> bool:
     filename = ""
+
+    book = db.merge(book)
+
     try:
         cbs = ConvertBookService(book=book, format_type=format_type, template=template)
         filename = cbs.main()

@@ -32,9 +32,7 @@ class ConvertBookService:
         html_page = html_data_injector_service.main()
 
         path_to_complete_file = (
-            f"{book_settings.storage}/"
-            f"{book_settings.storage_complete_book}/"
-            f"{self.user.id}/{self.book.id}"
+            f"{book_settings.storage_complete_book}/{self.user.id}/{self.book.id}"
         )
         filename = f"{int(time())}_{self.book.id}.{self.format_type}"
         self.convert_service.convert(

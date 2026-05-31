@@ -22,7 +22,7 @@ from src.dependencies import (
 )
 from src.exceptions.validate_book_model_exception import ModelBookValidatorError
 from src.models.book import Book
-from src.models.job import Job, JobStatusEnum
+from src.models.job import Job, JobStatusEnum, JobTypeEnum
 from src.schema.request.book_request import ConvertBookRequest
 from src.schema.response.book_response import BookDetailResponse, BookResponse
 from src.schema.response.response import PaginatedResponse
@@ -65,15 +65,15 @@ async def convert_book(
     book: Annotated[Book, Depends(get_book_if_owner)],
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> dict[str, str]:
-
     stmt = (
         select(Job)
         .where(Job.object_table == Book.__tablename__, Job.object_id == book.id)
+        .where(Job.type == JobTypeEnum.BOOK_PARSING)
         .order_by(Job.id.desc())
     )
-    job = await db.scalar(stmt)
+    parsing_job = await db.scalar(stmt)
 
-    if not job or job.status != JobStatusEnum.COMPLETED:
+    if not parsing_job or parsing_job.status != JobStatusEnum.COMPLETED:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Book convert failed"
         )
@@ -93,9 +93,19 @@ async def convert_book(
             status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
         ) from e
 
+    job = Job(
+        object_id=book.id,
+        object_table=book.__tablename__,
+        type=JobTypeEnum.BOOK_CONVERTING,
+    )
+
+    db.add(job)
+    await db.commit()
+    await db.refresh(job)
+
     convert_book_task.delay(job.id, request.format, request.template)
 
-    return {"message": f"Book conversion started for job {job.id}."}
+    return {"message": f"Book conversion started for book {book.id}."}
 
 
 @router.get(
