@@ -18,9 +18,9 @@ https://www.dicebear.com/styles/
 ### Commands
 
 ```bash
-docker exec api_app python src/cli.py download_avatars --count 30 --style adventurer
+docker exec api_app python cli.py download_avatars --count 30 --style adventurer
 ```
 
 ```bash
-docker exec api_app python src/cli.py download_multiple_avatars --count 30 
+docker exec api_app python cli.py download_multiple_avatars --count 30 
 ```
