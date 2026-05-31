@@ -1,4 +1,6 @@
 import time
+from secrets import choice
+from string import ascii_lowercase
 
 import requests
 import typer
@@ -16,7 +18,8 @@ def download_avatars(count: int = 100, style: str = "adventurer") -> None:
 
     for _i in range(count):
         ts = int(time.time())
-        seed = f"{style}_{ts}"
+        random_char = "".join(choice(ascii_lowercase) for i in range(5))
+        seed = f"{style}_{ts}_{random_char}"
         url = (
             f"https://api.dicebear.com/9.x/"
             f"{style}/{FILE_FORMAT}?seed={seed}&size={SIZE}"
