@@ -51,7 +51,7 @@ class BookListService:
 
         job_rn = (
             func.row_number()
-            .over(partition_by=Job.object_id, order_by=Job.id.desc())
+            .over(partition_by=(Job.object_id, Job.type), order_by=Job.id.desc())
             .label("rn")
         )
         job_subq = (
@@ -84,8 +84,11 @@ class BookListService:
                     created_at=book_obj.created_at,
                     updated_at=book_obj.updated_at,
                 )
-            books_map[book_obj.id].add_complete_book(cb_obj)
-            books_map[book_obj.id].add_job(job_obj)
+
+            if cb_obj:
+                books_map[book_obj.id].add_complete_book(cb_obj)
+            if job_obj:
+                books_map[book_obj.id].add_job(job_obj)
 
         return PaginatedResponse(
             data=list(books_map.values()),

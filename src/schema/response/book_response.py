@@ -25,7 +25,7 @@ class BookDetailResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     complete_books: list[CompleteBookResponse] = []
-    jobs: list[JobResponse] = []
+    actions: list[JobResponse] = []
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -34,5 +34,5 @@ class BookDetailResponse(BaseModel):
             self.complete_books.append(CompleteBookResponse.model_validate(cb_obj))
 
     def add_job(self, job_obj: JobResponse) -> None:
-        if job_obj and not any(x.id == job_obj.id for x in self.jobs):
-            self.jobs.append(JobResponse.model_validate(job_obj))
+        if job_obj and not any(x.id == job_obj.id for x in self.actions):
+            self.actions.append(JobResponse.model_validate(job_obj))
