@@ -2,7 +2,15 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from sqlalchemy import Column, DateTime, Enum, ForeignKey, Integer, String
+from sqlalchemy import (
+    Column,
+    DateTime,
+    Enum,
+    ForeignKey,
+    Integer,
+    String,
+    text,
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
@@ -35,6 +43,9 @@ class CompleteBook(Base):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, index=True)
     book_id = Column(Integer, ForeignKey("books.id", ondelete="CASCADE"), index=True)
     name: Mapped[str] = mapped_column(String, nullable=False)
+    is_expired: Mapped[bool] = mapped_column(
+        default=False, server_default=text("false")
+    )
     format: Mapped[FormatTypeEnum] = mapped_column(
         Enum(FormatTypeEnum, native_enum=False, length=40),
         nullable=False,

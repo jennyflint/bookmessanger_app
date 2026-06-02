@@ -21,6 +21,7 @@ from src.models.user import User
 from src.schema.response.enum_response import EnumOptionResponse
 from src.security import auth
 from src.services.book_list_service import BookListService
+from src.services.complete_book_list_service import CompleteBookListService
 from src.services.convert_service import ConvertService
 from src.services.converters.convert import PdfConverter
 from src.services.file_service import FileService
@@ -166,3 +167,9 @@ def get_book_list_service(
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> BookListService:
     return BookListService(db, current_user)
+
+
+def get_complete_book_list_service(
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> CompleteBookListService:
+    return CompleteBookListService(db)

@@ -13,6 +13,8 @@ class BookResponse(BaseModel):
 class CompleteBookResponse(BaseModel):
     id: int
     name: str
+    book_id: int
+    is_expired: bool
     created_at: datetime
     updated_at: datetime
 

@@ -19,15 +19,21 @@ from src.dependencies import (
     file_validator_dependency,
     get_book_if_owner,
     get_book_list_service,
+    get_complete_book_list_service,
 )
 from src.exceptions.validate_book_model_exception import ModelBookValidatorError
 from src.models.book import Book
 from src.models.job import Job, JobStatusEnum, JobTypeEnum
 from src.schema.request.book_request import ConvertBookRequest
-from src.schema.response.book_response import BookDetailResponse, BookResponse
+from src.schema.response.book_response import (
+    BookDetailResponse,
+    BookResponse,
+    CompleteBookResponse,
+)
 from src.schema.response.response import PaginatedResponse
 from src.services.book_list_service import BookListService
 from src.services.book_model.model_validator import ModelValidator
+from src.services.complete_book_list_service import CompleteBookListService
 from src.services.upload_book_service import UploadBookService
 from src.tasks.convert_book_task import convert_book_task
 from src.utils.storage import Storage
@@ -145,4 +151,24 @@ async def get_user_books(
         sort_by=sort_by,
         sort_desc=sort_desc,
         filter_name=filter_name,
+    )
+
+
+@router.get("/list/download/{book_id}")
+async def download_list(
+    book: Annotated[Book, Depends(get_book_if_owner)],
+    complete_book_list_service: Annotated[
+        CompleteBookListService, Depends(get_complete_book_list_service)
+    ],
+    limit: int = 20,
+    offset: int = 0,
+    sort_by: str = "id",
+    sort_desc: bool = True,
+) -> PaginatedResponse[CompleteBookResponse]:
+    return await complete_book_list_service.get_complete_books(
+        book=book,
+        limit=limit,
+        offset=offset,
+        sort_by=sort_by,
+        sort_desc=sort_desc,
     )
