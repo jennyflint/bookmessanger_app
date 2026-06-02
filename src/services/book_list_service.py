@@ -2,7 +2,7 @@ from sqlalchemy import and_, asc, desc, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import aliased
 
-from src.models.book import Book, CompleteBook
+from src.models.book import Book
 from src.models.job import Job
 from src.models.user import User
 from src.schema.response.book_response import BookDetailResponse
@@ -41,14 +41,6 @@ class BookListService:
         books_subq = books_stmt.subquery("books_subq")
         book_alias = aliased(Book, books_subq)
 
-        cb_rn = (
-            func.row_number()
-            .over(partition_by=CompleteBook.book_id, order_by=CompleteBook.id.desc())
-            .label("rn")
-        )
-        cb_subq = select(CompleteBook, cb_rn).subquery("cb_subq")
-        complete_book_alias = aliased(CompleteBook, cb_subq)
-
         job_rn = (
             func.row_number()
             .over(partition_by=(Job.object_id, Job.type), order_by=Job.id.desc())
@@ -60,11 +52,7 @@ class BookListService:
         job_alias = aliased(Job, job_subq)
 
         stmt = (
-            select(book_alias, complete_book_alias, job_alias)
-            .outerjoin(
-                complete_book_alias,
-                and_(complete_book_alias.book_id == book_alias.id, cb_subq.c.rn <= 20),
-            )
+            select(book_alias, job_alias)
             .outerjoin(
                 job_alias,
                 and_(job_alias.object_id == book_alias.id, job_subq.c.rn <= 20),
@@ -76,7 +64,7 @@ class BookListService:
         rows = result.all()
 
         books_map: dict[int, BookDetailResponse] = {}
-        for book_obj, cb_obj, job_obj in rows:
+        for book_obj, job_obj in rows:
             if book_obj.id not in books_map:
                 books_map[book_obj.id] = BookDetailResponse(
                     id=book_obj.id,
@@ -85,8 +73,6 @@ class BookListService:
                     updated_at=book_obj.updated_at,
                 )
 
-            if cb_obj:
-                books_map[book_obj.id].add_complete_book(cb_obj)
             if job_obj:
                 books_map[book_obj.id].add_job(job_obj)
 

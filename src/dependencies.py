@@ -15,18 +15,14 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database import get_db
-from src.enums.enums import FormatTypeEnum
 from src.models.book import Book
 from src.models.user import User
 from src.schema.response.enum_response import EnumOptionResponse
 from src.security import auth
 from src.services.book_list_service import BookListService
-from src.services.complete_book_list_service import CompleteBookListService
-from src.services.convert_service import ConvertService
-from src.services.converters.convert import PdfConverter
+from src.services.export_book_list_service import ExportBookListService
+from src.services.export_book_service import ExportBookService
 from src.services.file_service import FileService
-from src.services.module.playwright_pdf_module import PlaywrightPDFGenerator
-from src.settings.settings import app_settings
 from src.validators.file_validator import FileValidator
 
 
@@ -121,15 +117,6 @@ def file_validator_dependency(
     return Depends(_validate)
 
 
-def get_converter_service() -> ConvertService:
-    playwright_gen = PlaywrightPDFGenerator(app_settings.playwright_ws_endpoint)
-    pdf_converter = PdfConverter(playwright_gen)
-    service = ConvertService()
-    service.register(FormatTypeEnum.PDF, pdf_converter)
-
-    return service
-
-
 async def get_book_if_owner(
     book_id: int,
     current_user: Annotated[User, Depends(get_current_user)],
@@ -169,7 +156,13 @@ def get_book_list_service(
     return BookListService(db, current_user)
 
 
-def get_complete_book_list_service(
+def get_export_book_list_service(
     db: Annotated[AsyncSession, Depends(get_db)],
-) -> CompleteBookListService:
-    return CompleteBookListService(db)
+) -> ExportBookListService:
+    return ExportBookListService(db)
+
+
+def get_export_book_service(
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> ExportBookService:
+    return ExportBookService(db)

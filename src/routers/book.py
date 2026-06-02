@@ -19,7 +19,8 @@ from src.dependencies import (
     file_validator_dependency,
     get_book_if_owner,
     get_book_list_service,
-    get_complete_book_list_service,
+    get_export_book_list_service,
+    get_export_book_service,
 )
 from src.exceptions.validate_book_model_exception import ModelBookValidatorError
 from src.models.book import Book
@@ -28,14 +29,13 @@ from src.schema.request.book_request import ConvertBookRequest
 from src.schema.response.book_response import (
     BookDetailResponse,
     BookResponse,
-    CompleteBookResponse,
+    ExportBookResponse,
 )
 from src.schema.response.response import PaginatedResponse
 from src.services.book_list_service import BookListService
-from src.services.book_model.model_validator import ModelValidator
-from src.services.complete_book_list_service import CompleteBookListService
+from src.services.export_book_list_service import ExportBookListService
+from src.services.export_book_service import ExportBookService
 from src.services.upload_book_service import UploadBookService
-from src.tasks.convert_book_task import convert_book_task
 from src.utils.storage import Storage
 
 
@@ -70,6 +70,7 @@ async def convert_book(
     request: ConvertBookRequest,
     book: Annotated[Book, Depends(get_book_if_owner)],
     db: Annotated[AsyncSession, Depends(get_db)],
+    export_book_service: Annotated[ExportBookService, Depends(get_export_book_service)],
 ) -> dict[str, str]:
     stmt = (
         select(Job)
@@ -92,24 +93,13 @@ async def convert_book(
         )
 
     try:
-        validator = ModelValidator(book_model, request.characters)
-        validator.validate()
+        await export_book_service.export(
+            book, book_model, request.characters, request.format, request.template
+        )
     except ModelBookValidatorError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
         ) from e
-
-    job = Job(
-        object_id=book.id,
-        object_table=book.__tablename__,
-        type=JobTypeEnum.BOOK_CONVERTING,
-    )
-
-    db.add(job)
-    await db.commit()
-    await db.refresh(job)
-
-    convert_book_task.delay(job.id, request.format, request.template)
 
     return {"message": f"Book conversion started for book {book.id}."}
 
@@ -157,15 +147,15 @@ async def get_user_books(
 @router.get("/list/download/{book_id}")
 async def download_list(
     book: Annotated[Book, Depends(get_book_if_owner)],
-    complete_book_list_service: Annotated[
-        CompleteBookListService, Depends(get_complete_book_list_service)
+    export_book_list_service: Annotated[
+        ExportBookListService, Depends(get_export_book_list_service)
     ],
     limit: int = 20,
     offset: int = 0,
     sort_by: str = "id",
     sort_desc: bool = True,
-) -> PaginatedResponse[CompleteBookResponse]:
-    return await complete_book_list_service.get_complete_books(
+) -> PaginatedResponse[ExportBookResponse]:
+    return await export_book_list_service.get_export_books(
         book=book,
         limit=limit,
         offset=offset,

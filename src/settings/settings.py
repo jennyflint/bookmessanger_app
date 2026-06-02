@@ -62,7 +62,7 @@ class BookSettings(BaseSettings):
         return Path("books") / "templates" / "html"
 
     @property
-    def storage_complete_book(self) -> Path:
+    def storage_export_book(self) -> Path:
         return Path("/app") / "storage" / "converted_books"
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")

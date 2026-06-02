@@ -1,13 +1,22 @@
 from time import time
 
-from src.dependencies import (
-    get_converter_service,
-)
 from src.enums.enums import FormatTypeEnum, TemplateTypeEnum
 from src.models.book import Book
+from src.services.convert_service import ConvertService
+from src.services.converters.convert import PdfConverter
 from src.services.html_data_injector_service import HtmlDataInjectorService
-from src.settings.settings import book_settings
+from src.services.module.playwright_pdf_module import PlaywrightPDFGenerator
+from src.settings.settings import app_settings, book_settings
 from src.utils.storage import Storage
+
+
+def get_converter_service() -> ConvertService:
+    playwright_gen = PlaywrightPDFGenerator(app_settings.playwright_ws_endpoint)
+    pdf_converter = PdfConverter(playwright_gen)
+    service = ConvertService()
+    service.register(FormatTypeEnum.PDF, pdf_converter)
+
+    return service
 
 
 class ConvertBookService:
@@ -31,14 +40,14 @@ class ConvertBookService:
         )
         html_page = html_data_injector_service.main()
 
-        path_to_complete_file = (
-            f"{book_settings.storage_complete_book}/{self.user.id}/{self.book.id}"
+        path_to_export_file = (
+            f"{book_settings.storage_export_book}/{self.user.id}/{self.book.id}"
         )
         filename = f"{int(time())}_{self.book.id}.{self.format_type}"
         self.convert_service.convert(
             content=html_page,
             format_type=self.format_type,
-            file_path=f"{path_to_complete_file}/{filename}",
+            file_path=f"{path_to_export_file}/{filename}",
         )
 
         return filename
