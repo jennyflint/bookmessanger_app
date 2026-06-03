@@ -17,6 +17,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.database import get_db
 from src.models.book import Book
 from src.models.user import User
+from src.repositories.export_book_repository import ExportBookRepository
 from src.schema.response.enum_response import EnumOptionResponse
 from src.security import auth
 from src.services.book_list_service import BookListService
@@ -166,3 +167,9 @@ def get_export_book_service(
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> ExportBookService:
     return ExportBookService(db)
+
+
+def get_export_book_repository(
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> ExportBookRepository:
+    return ExportBookRepository(db)
