@@ -1,6 +1,6 @@
 from collections.abc import AsyncGenerator
 
-from sqlalchemy import create_engine, event
+from sqlalchemy import create_engine, event, true
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import (
     ORMExecuteState,
@@ -9,7 +9,7 @@ from sqlalchemy.orm import (
     with_loader_criteria,
 )
 
-from src.models.mixin import SoftDeleteMixin
+from src.models.base import Base
 from src.settings.settings import db_settings
 
 
@@ -50,5 +50,11 @@ def intercept_async_orm_execute(execute_state: ORMExecuteState) -> None:
         "include_deleted", False
     ):
         execute_state.statement = execute_state.statement.options(
-            with_loader_criteria(SoftDeleteMixin, lambda cls: cls.deleted_at.is_(None))
+            with_loader_criteria(
+                Base,
+                lambda cls: (
+                    cls.deleted_at.is_(None) if hasattr(cls, "deleted_at") else true()
+                ),
+                include_aliases=True,
+            )
         )

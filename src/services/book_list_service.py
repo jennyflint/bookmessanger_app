@@ -23,7 +23,9 @@ class BookListService:
         filter_name: str | None = None,
     ) -> PaginatedResponse[BookDetailResponse]:
 
-        base_stmt = select(Book).where(Book.user_id == self.current_user.id)
+        base_stmt = select(Book).where(
+            and_(Book.user_id == self.current_user.id, Book.deleted_at.is_(None))
+        )
         if filter_name:
             base_stmt = base_stmt.where(Book.original_name.ilike(f"%{filter_name}%"))
 

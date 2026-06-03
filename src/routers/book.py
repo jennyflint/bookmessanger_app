@@ -11,7 +11,7 @@ from fastapi import (
     UploadFile,
 )
 from fastapi.responses import FileResponse
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 
@@ -35,7 +35,7 @@ from src.schema.response.book_response import (
     BookResponse,
     ExportBookResponse,
 )
-from src.schema.response.response import PaginatedResponse
+from src.schema.response.response import PaginatedResponse, StatusResponse
 from src.services.book_list_service import BookListService
 from src.services.export_book_list_service import ExportBookListService
 from src.services.export_book_service import ExportBookService
@@ -75,7 +75,7 @@ async def convert_book(
     book: Annotated[Book, Depends(get_book_if_owner)],
     db: Annotated[AsyncSession, Depends(get_db)],
     export_book_service: Annotated[ExportBookService, Depends(get_export_book_service)],
-) -> dict[str, str]:
+) -> StatusResponse:
     stmt = (
         select(Job)
         .where(Job.object_table == Book.__tablename__, Job.object_id == book.id)
@@ -105,7 +105,9 @@ async def convert_book(
             status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
         ) from e
 
-    return {"message": f"Book conversion started for book {book.id}."}
+    return StatusResponse(
+        message=f"Book conversion started for book {book.id}.", success=True
+    )
 
 
 @router.get(
@@ -209,7 +211,7 @@ async def delete_export_item(
     book: Annotated[Book, Depends(get_book_if_owner)],
     export_book: Annotated[ExportBook, Depends(get_export_book_if_owner)],
     db: Annotated[AsyncSession, Depends(get_db)],
-) -> dict[str, str]:
+) -> StatusResponse:
 
     if export_book.status == ExportBookStatusEnum.PENDING:
         raise HTTPException(
@@ -227,4 +229,15 @@ async def delete_export_item(
     await db.delete(export_book)
     await db.commit()
 
-    return {"status": "success", "message": "Export book deleted successfully"}
+    return StatusResponse(message="Export book deleted successfully", success=True)
+
+
+@router.delete("/delete/{book_id}")
+async def delete_book(
+    book: Annotated[Book, Depends(get_book_if_owner)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> StatusResponse:
+    book.deleted_at = func.now()
+    await db.commit()
+
+    return StatusResponse(message="Book deleted successfully", success=True)

@@ -24,3 +24,8 @@ class PaginationMeta(BaseModel):
 class PaginatedResponse[T](BaseModel):
     data: list[T]
     meta: PaginationMeta
+
+
+class StatusResponse(BaseModel):
+    message: str
+    success: bool

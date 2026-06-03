@@ -14,10 +14,11 @@ from sqlalchemy.sql import func
 from src.enums.enums import FormatTypeEnum
 from src.enums.export_book import ExportBookStatusEnum
 from src.models.base import Base
+from src.models.mixin import SoftDeleteMixin
 from src.models.user import User
 
 
-class Book(Base):
+class Book(Base, SoftDeleteMixin):
     __tablename__ = "books"
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, index=True)
     user_id: Mapped[int] = mapped_column(
