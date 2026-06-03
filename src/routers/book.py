@@ -1,6 +1,5 @@
 import json
 import mimetypes
-from pathlib import Path
 from typing import Annotated
 
 from fastapi import (
@@ -22,15 +21,14 @@ from src.dependencies import (
     file_validator_dependency,
     get_book_if_owner,
     get_book_list_service,
+    get_export_book_if_owner,
     get_export_book_list_service,
-    get_export_book_repository,
     get_export_book_service,
 )
 from src.enums.export_book import ExportBookStatusEnum
 from src.exceptions.validate_book_model_exception import ModelBookValidatorError
-from src.models.book import Book
+from src.models.book import Book, ExportBook
 from src.models.job import Job, JobStatusEnum, JobTypeEnum
-from src.repositories.export_book_repository import ExportBookRepository
 from src.schema.request.book_request import ConvertBookRequest
 from src.schema.response.book_response import (
     BookDetailResponse,
@@ -42,7 +40,6 @@ from src.services.book_list_service import BookListService
 from src.services.export_book_list_service import ExportBookListService
 from src.services.export_book_service import ExportBookService
 from src.services.upload_book_service import UploadBookService
-from src.settings.settings import book_settings
 from src.utils.storage import Storage
 
 
@@ -174,22 +171,8 @@ async def download_list(
 @router.get("/download/{book_id}/item/{export_id}")
 async def download_export_item(
     book: Annotated[Book, Depends(get_book_if_owner)],
-    export_id: int,
-    export_book_repository: Annotated[
-        ExportBookRepository, Depends(get_export_book_repository)
-    ],
+    export_book: Annotated[ExportBook, Depends(get_export_book_if_owner)],
 ) -> FileResponse:
-    export_book = await export_book_repository.get_by_id(export_id)
-    if not export_book:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Export book not found"
-        )
-
-    if export_book.book_id != book.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="You do not have permission to access this export book",
-        )
 
     if export_book.status == ExportBookStatusEnum.REMOVED:
         raise HTTPException(
@@ -202,13 +185,8 @@ async def download_export_item(
             detail="Export book is not completed",
         )
 
-    path_to_folder = book_settings.storage_export_book
-
-    path_to_file = (
-        Path(path_to_folder)
-        / str(book.user_id)
-        / str(book.id)
-        / export_book.export_filename
+    path_to_file = Storage.get_export_file_by_export_book(
+        int(book.user_id), int(book.id), export_book.export_filename
     )
     if not path_to_file.exists():
         raise HTTPException(
@@ -224,3 +202,29 @@ async def download_export_item(
     return FileResponse(
         path=path_to_file, media_type=media_type, filename=export_book.export_filename
     )
+
+
+@router.delete("/delete/{book_id}/item/{export_id}")
+async def delete_export_item(
+    book: Annotated[Book, Depends(get_book_if_owner)],
+    export_book: Annotated[ExportBook, Depends(get_export_book_if_owner)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> dict[str, str]:
+
+    if export_book.status == ExportBookStatusEnum.PENDING:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Export book is pending"
+        )
+
+    if export_book.export_filename:
+        path_to_file = Storage.get_export_file_by_export_book(
+            int(book.user_id), int(book.id), export_book.export_filename
+        )
+
+        if path_to_file.exists():
+            path_to_file.unlink()
+
+    await db.delete(export_book)
+    await db.commit()
+
+    return {"status": "success", "message": "Export book deleted successfully"}

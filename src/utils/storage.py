@@ -21,3 +21,11 @@ class Storage:
         with Path(path_to_file).open(encoding="utf-8") as file:
             content = file.read()
         return content
+
+    @staticmethod
+    def get_export_file_by_export_book(
+        user_id: int, book_id: int, export_filename: str
+    ) -> Path:
+        path_to_folder = book_settings.storage_export_book
+
+        return Path(path_to_folder) / str(user_id) / str(book_id) / export_filename

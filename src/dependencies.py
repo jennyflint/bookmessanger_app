@@ -15,7 +15,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database import get_db
-from src.models.book import Book
+from src.models.book import Book, ExportBook
 from src.models.user import User
 from src.repositories.export_book_repository import ExportBookRepository
 from src.schema.response.enum_response import EnumOptionResponse
@@ -173,3 +173,27 @@ def get_export_book_repository(
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> ExportBookRepository:
     return ExportBookRepository(db)
+
+
+async def get_export_book_if_owner(
+    export_id: int,
+    book: Annotated[Book, Depends(get_book_if_owner)],
+    export_book_repository: Annotated[
+        ExportBookRepository, Depends(get_export_book_repository)
+    ],
+) -> ExportBook:
+
+    export_book = await export_book_repository.get_by_id(export_id)
+
+    if not export_book:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Export book not found"
+        )
+
+    if export_book.book_id != book.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to access this export book",
+        )
+
+    return export_book
