@@ -7,7 +7,7 @@ from sqlalchemy import DateTime, Enum, Index, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql import func
 
-from src.database import Base
+from src.models.base import Base
 
 
 class JobStatusEnum(enum.StrEnum):

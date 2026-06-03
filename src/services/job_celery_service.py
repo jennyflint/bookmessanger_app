@@ -6,8 +6,9 @@ import redis
 from sqlalchemy import Select, select
 from sqlalchemy.orm import Mapper, Session, class_mapper
 
-from src.database import Base, SessionLocal
+from src.database import SessionLocal
 from src.exceptions.job_exception import JobNotFoundError, JobObjectTableNotFoundError
+from src.models.base import Base
 from src.models.job import Job, JobStatusEnum
 from src.settings.settings import app_settings
 

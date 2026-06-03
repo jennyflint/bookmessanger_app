@@ -3,7 +3,7 @@ import os
 from sqlalchemy import engine_from_config, pool
 
 from alembic import context
-from src.database import Base
+from src.models.base import Base
 from src.models.user import RefreshToken, User  # noqa: F401
 
 

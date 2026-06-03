@@ -3,26 +3,26 @@ from __future__ import annotations
 from datetime import datetime
 
 from sqlalchemy import (
-    Column,
     DateTime,
     Enum,
     ForeignKey,
-    Integer,
     String,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
-from src.database import Base
 from src.enums.enums import FormatTypeEnum
 from src.enums.export_book import ExportBookStatusEnum
+from src.models.base import Base
 from src.models.user import User
 
 
 class Book(Base):
     __tablename__ = "books"
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), index=True
+    )
     original_name: Mapped[str] = mapped_column(String, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
@@ -41,7 +41,9 @@ class Book(Base):
 class ExportBook(Base):
     __tablename__ = "export_books"
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, index=True)
-    book_id = Column(Integer, ForeignKey("books.id", ondelete="CASCADE"), index=True)
+    book_id: Mapped[int] = mapped_column(
+        ForeignKey("books.id", ondelete="CASCADE"), index=True
+    )
     name: Mapped[str] = mapped_column(String, nullable=True)
     export_filename: Mapped[str] = mapped_column(String, nullable=True)
     status: Mapped[ExportBookStatusEnum] = mapped_column(

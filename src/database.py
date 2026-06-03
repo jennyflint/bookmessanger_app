@@ -1,9 +1,15 @@
 from collections.abc import AsyncGenerator
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, event
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
-from sqlalchemy.orm import DeclarativeBase, sessionmaker
+from sqlalchemy.orm import (
+    ORMExecuteState,
+    Session,
+    sessionmaker,
+    with_loader_criteria,
+)
 
+from src.models.mixin import SoftDeleteMixin
 from src.settings.settings import db_settings
 
 
@@ -33,5 +39,16 @@ async def get_db() -> AsyncGenerator[AsyncSession]:
             await db.close()
 
 
-class Base(DeclarativeBase):
-    pass
+@event.listens_for(Session, "do_orm_execute")
+def intercept_async_orm_execute(execute_state: ORMExecuteState) -> None:
+    """
+    Intercept ORM execute to apply soft delete filter.
+    For off use: .execution_options(include_deleted=True)
+    """
+
+    if execute_state.is_select and not execute_state.execution_options.get(
+        "include_deleted", False
+    ):
+        execute_state.statement = execute_state.statement.options(
+            with_loader_criteria(SoftDeleteMixin, lambda cls: cls.deleted_at.is_(None))
+        )
