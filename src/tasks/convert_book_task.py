@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 
 from src.celery_app import celery_app
-from src.enums.enums import FormatTypeEnum, TemplateTypeEnum
+from src.enums.enums import FormatTypeEnum
 from src.enums.export_book import ExportBookStatusEnum
 from src.enums.websocket_enums import WebsocketTypeEnum
 from src.models.book import ExportBook
@@ -10,9 +10,7 @@ from src.services.job_celery_service import JobCeleryService
 
 
 @celery_app.task(name="convert_book_task")  # type: ignore[untyped-decorator]
-def convert_book_task(
-    job_id: int, format_type: FormatTypeEnum, template: TemplateTypeEnum, user_id: int
-) -> str:
+def convert_book_task(job_id: int, format_type: FormatTypeEnum, user_id: int) -> str:
     job_service = JobCeleryService(job_id, is_publish=True)
 
     export_book = job_service.get_target_object_after_verify(ExportBook)
@@ -27,7 +25,6 @@ def convert_book_task(
         convert_task,
         export_book=export_book,
         format_type=format_type,
-        template=template,
     )
 
 
@@ -35,7 +32,6 @@ def convert_task(
     db: Session,
     export_book: ExportBook,
     format_type: FormatTypeEnum,
-    template: TemplateTypeEnum,
 ) -> bool:
     export_book = db.merge(export_book)
     export_book.status = ExportBookStatusEnum.PENDING
@@ -43,13 +39,22 @@ def convert_task(
 
     book = export_book.book
     try:
-        cbs = ConvertBookService(book=book, format_type=format_type, template=template)
+        characters_data = export_book.characters
+        if not isinstance(characters_data, list):
+            characters_data = []
+        cbs = ConvertBookService(
+            book=book,
+            format_type=format_type,
+            template=export_book.template,
+            characters=characters_data,
+        )
         filename = cbs.main()
 
         export_book.status = ExportBookStatusEnum.COMPLETED
         export_book.export_filename = filename
 
-    except Exception:
+    except Exception as e:
+        print(e)
         export_book.status = ExportBookStatusEnum.FAILED
         return False
     finally:

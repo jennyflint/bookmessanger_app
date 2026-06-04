@@ -1,5 +1,6 @@
 from typing import Any
 
+from fastapi.encoders import jsonable_encoder
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.enums.enums import FormatTypeEnum, TemplateTypeEnum
@@ -25,7 +26,9 @@ class ExportBookService:
     ) -> None:
         validator = ModelValidator(book_model, characters)
         validator.validate()
-        export_book = await self._create_export_book(book, format_file)
+        export_book = await self._create_export_book(
+            book, format_file, template, characters
+        )
 
         job = Job(
             object_id=export_book.id,
@@ -37,11 +40,22 @@ class ExportBookService:
         await self.db.commit()
         await self.db.refresh(job)
 
-        convert_book_task.delay(job.id, format_file, template, book.user_id)
+        convert_book_task.delay(job.id, format_file, book.user_id)
 
-    async def _create_export_book(self, book: Book, format_file: str) -> ExportBook:
+    async def _create_export_book(
+        self,
+        book: Book,
+        format_file: str,
+        template: TemplateTypeEnum,
+        characters: list[Character],
+    ) -> ExportBook:
+        clean_characters_dict = jsonable_encoder(characters)
         export_book = ExportBook(
-            book_id=book.id, status=ExportBookStatusEnum.PENDING, format=format_file
+            book_id=book.id,
+            status=ExportBookStatusEnum.PENDING,
+            format=format_file,
+            template=template,
+            characters=clean_characters_dict,
         )
 
         self.db.add(export_book)

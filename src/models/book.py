@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Any
 
 from sqlalchemy import (
+    JSON,
     DateTime,
     Enum,
     ForeignKey,
@@ -11,7 +13,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
-from src.enums.enums import FormatTypeEnum
+from src.enums.enums import FormatTypeEnum, TemplateTypeEnum
 from src.enums.export_book import ExportBookStatusEnum
 from src.models.base import Base
 from src.models.mixin import SoftDeleteMixin
@@ -55,6 +57,13 @@ class ExportBook(Base):
     format: Mapped[FormatTypeEnum] = mapped_column(
         Enum(FormatTypeEnum, native_enum=False, length=40),
         nullable=False,
+    )
+    template: Mapped[TemplateTypeEnum] = mapped_column(
+        Enum(TemplateTypeEnum, native_enum=False, length=40),
+        nullable=True,
+    )
+    characters: Mapped[dict[str, Any] | list[Any] | None] = mapped_column(
+        JSON, nullable=True
     )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()

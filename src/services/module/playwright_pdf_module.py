@@ -6,6 +6,9 @@ from playwright.sync_api import sync_playwright
 from src.exceptions.convert_exception import ConvertPdfError
 
 
+PLAYWRIGHT_TIMEOUT = 3000000
+
+
 class PlaywrightPDFGenerator:
     def __init__(self, ws_endpoint: str | None = None):
         self.ws_endpoint = ws_endpoint
@@ -13,13 +16,24 @@ class PlaywrightPDFGenerator:
     def generate_pdf_bytes(self, html_content: str) -> Any:
         with sync_playwright() as p:
             if self.ws_endpoint:
-                browser = p.chromium.connect_over_cdp(self.ws_endpoint)
+                ws_url = self.ws_endpoint
+                if "timeout=" not in ws_url:
+                    separator = "&" if "?" in ws_url else "?"
+                    ws_url = f"{ws_url}{separator}timeout={PLAYWRIGHT_TIMEOUT}"
+
+                browser = p.chromium.connect_over_cdp(
+                    ws_url, timeout=PLAYWRIGHT_TIMEOUT
+                )
             else:
                 browser = p.chromium.launch(headless=True)
 
             context = browser.new_context()
             page = context.new_page()
-            page.set_content(html_content, wait_until="networkidle")
+
+            page.set_default_timeout(PLAYWRIGHT_TIMEOUT)
+            page.set_default_navigation_timeout(PLAYWRIGHT_TIMEOUT)
+
+            page.set_content(html_content, wait_until="load")
 
             pdf_bytes = page.pdf(
                 format="A4",

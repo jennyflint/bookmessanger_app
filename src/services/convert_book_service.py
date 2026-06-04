@@ -1,7 +1,10 @@
+import json
 from time import time
+from typing import Any
 
 from src.enums.enums import FormatTypeEnum, TemplateTypeEnum
 from src.models.book import Book
+from src.services.book_model.replace_model_values import ReplaceModelValues
 from src.services.convert_service import ConvertService
 from src.services.converters.convert import PdfConverter
 from src.services.html_data_injector_service import HtmlDataInjectorService
@@ -21,22 +24,32 @@ def get_converter_service() -> ConvertService:
 
 class ConvertBookService:
     def __init__(
-        self, book: Book, format_type: FormatTypeEnum, template: TemplateTypeEnum
+        self,
+        book: Book,
+        format_type: FormatTypeEnum,
+        template: TemplateTypeEnum,
+        characters: list[dict[str, Any]],
     ):
         self.convert_service = get_converter_service()
         self.book = book
         self.user = book.user
         self.format_type = format_type
         self.template = template
+        self.characters = characters
 
     def _get_book_json_model(self) -> str:
         return Storage.get_book_model_by_book(self.book)
 
     def main(self) -> str:
-        json_model = self._get_book_json_model()
+        json_model = json.loads(self._get_book_json_model())
+
+        replace_model_values = ReplaceModelValues(json_model)
+        replace_model_values.replace_characters(self.characters)
+
+        json_model = replace_model_values.get_book_model()
 
         html_data_injector_service = HtmlDataInjectorService(
-            template=self.template, json_data=json_model
+            template=self.template, json_data=json.dumps(json_model)
         )
         html_page = html_data_injector_service.main()
 
