@@ -15,21 +15,23 @@ class ReplaceModelValues:
         for char in characters:
             avatar_url = char.get("avatar")
 
-            if avatar_url and avatar_url.endswith(".svg"):
+            if avatar_url and avatar_url.endswith(".png"):
                 parsed_path = urlparse(avatar_url).path
 
                 if "avatars/" in parsed_path:
                     relative_path = parsed_path.split("avatars/")[-1]
                 else:
                     relative_path = Path(parsed_path).name
-                local_file_path = base_avatars_dir / relative_path
+                local_file_path = (base_avatars_dir / relative_path).with_suffix(".png")
+
                 if local_file_path.exists():
                     try:
                         with local_file_path.open("rb") as image_file:
                             encoded_string = base64.b64encode(image_file.read()).decode(
                                 "utf-8"
                             )
-                        char["avatar"] = f"data:image/svg+xml;base64,{encoded_string}"
+
+                            char["avatar"] = f"data:image/png;base64,{encoded_string}"
                     except Exception as e:
                         print(f"Error reading file {local_file_path}: {e}")
                 else:

@@ -10,7 +10,7 @@ from src.settings.settings import app_settings
 
 router = APIRouter()
 AVATARS_DIR = Path("storage/characters/avatars")
-ALLOWED_EXTENSIONS = {".svg"}
+ALLOWED_EXTENSIONS = {".svg", ".png"}
 
 
 @router.get("/list")

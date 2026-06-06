@@ -8,8 +8,8 @@ import typer
 from src.services.storage_avatar_service import StorageAvatarService
 
 
-SIZE = 128
-FILE_FORMAT = "svg"
+SIZE = 256
+FILE_FORMAT = "png"
 
 
 def download_avatars(count: int = 100, style: str = "adventurer") -> None:
@@ -32,7 +32,7 @@ def download_avatars(count: int = 100, style: str = "adventurer") -> None:
             typer.echo(f"Downloaded {seed}.{FILE_FORMAT}")
         else:
             typer.echo(f"Error {seed}.{FILE_FORMAT}")
-        time.sleep(0.1)
+        time.sleep(0.3)
 
 
 def download_multiple_avatars(count: int = 100) -> None:
@@ -42,12 +42,17 @@ def download_multiple_avatars(count: int = 100) -> None:
         "big-ears",
         "big-smile",
         "bottts",
+        "bottts-neutral",
         "croodles",
+        "dylan",
+        "lorelei",
         "micah",
         "miniavs",
+        "notionists",
         "open-peeps",
         "personas",
         "pixel-art",
+        "toon-head",
     )
     for style in styles:
         download_avatars(count, style)
