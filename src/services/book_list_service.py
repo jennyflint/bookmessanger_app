@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import aliased
 
 from src.models.book import Book
-from src.models.job import Job
+from src.models.job import Job, JobTypeEnum
 from src.models.user import User
 from src.schema.response.book_response import BookDetailResponse
 from src.schema.response.response import PaginatedResponse, PaginationMeta
@@ -49,7 +49,9 @@ class BookListService:
             .label("rn")
         )
         job_subq = (
-            select(Job, job_rn).where(Job.object_table == "books").subquery("job_subq")
+            select(Job, job_rn)
+            .where(Job.object_table == "books", Job.type == JobTypeEnum.BOOK_PARSING)
+            .subquery("job_subq")
         )
         job_alias = aliased(Job, job_subq)
 

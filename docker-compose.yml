@@ -59,6 +59,7 @@ services:
     image: redis:8.6-alpine
     container_name: redis
     restart: always
+    command: redis-server --tcp-keepalive 60
     ports:
       - "6379:6379"
     networks:
