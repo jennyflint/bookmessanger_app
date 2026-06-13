@@ -20,7 +20,7 @@ class ExportBookService:
         self,
         book: Book,
         book_model: dict[str, Any],
-        characters: list[Character],
+        characters: list[Character] | None,
         format_file: FormatTypeEnum,
         template: TemplateTypeEnum,
     ) -> None:
@@ -47,7 +47,7 @@ class ExportBookService:
         book: Book,
         format_file: str,
         template: TemplateTypeEnum,
-        characters: list[Character],
+        characters: list[Character] | None,
     ) -> ExportBook:
         clean_characters_dict = jsonable_encoder(characters)
         export_book = ExportBook(

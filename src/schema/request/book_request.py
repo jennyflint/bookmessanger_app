@@ -31,4 +31,4 @@ class Character(BaseModel):
 class ConvertBookRequest(BaseModel):
     template: TemplateTypeEnum
     format: FormatTypeEnum
-    characters: list[Character]
+    characters: list[Character] | None = None
