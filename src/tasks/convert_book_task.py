@@ -1,3 +1,5 @@
+import logging
+
 from sqlalchemy.orm import Session
 
 from src.celery_app import celery_app
@@ -7,6 +9,9 @@ from src.enums.websocket_enums import WebsocketTypeEnum
 from src.models.book import ExportBook
 from src.services.convert_book_service import ConvertBookService
 from src.services.job_celery_service import JobCeleryService
+
+
+logger = logging.getLogger(__name__)
 
 
 @celery_app.task(name="convert_book_task")  # type: ignore[untyped-decorator]
@@ -54,8 +59,8 @@ def convert_task(
         export_book.status = ExportBookStatusEnum.COMPLETED
         export_book.export_filename = filename
 
-    except Exception as e:
-        print(e)
+    except Exception:
+        logger.exception(f"Error converting book {export_book.id}")
         export_book.status = ExportBookStatusEnum.FAILED
         return False
     finally:

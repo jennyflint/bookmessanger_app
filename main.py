@@ -1,3 +1,4 @@
+import logging
 import os
 from pathlib import Path
 
@@ -17,6 +18,20 @@ from src.routers.websockets import router as websocket_router
 from src.settings.settings import app_settings, auth_settings
 from src.websockets.manager import lifespan
 
+
+LOGS_DIR = Path("logs")
+LOGS_DIR.mkdir(parents=True, exist_ok=True)
+
+logging.basicConfig(
+    filename=LOGS_DIR / "app.log",
+    level=logging.ERROR,
+    format=(
+        "%(asctime)s | %(levelname)-8s | %(name)s | "
+        "%(filename)s:%(lineno)d (%(funcName)s) | %(message)s"
+    ),
+    encoding="utf-8",
+    force=True,
+)
 
 app = FastAPI(lifespan=lifespan)
 

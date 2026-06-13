@@ -1,7 +1,11 @@
+import logging
 from pathlib import Path
 from typing import Any
 
 from jinja2 import Environment, FileSystemLoader, TemplateNotFound
+
+
+logger = logging.getLogger(__name__)
 
 
 class TemplateManager:
@@ -21,4 +25,6 @@ class TemplateManager:
         except TemplateNotFound as err:
             err_msg = f"Template '{template_name}' \
                 not found in folder {self.templates_dir}"
+
+            logger.exception(err_msg)
             raise FileNotFoundError(err_msg) from err

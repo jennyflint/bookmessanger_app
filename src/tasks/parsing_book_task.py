@@ -1,4 +1,5 @@
 import json
+import logging
 from pathlib import Path
 
 import redis
@@ -16,6 +17,8 @@ from src.settings.settings import app_settings
 
 
 redis_client = redis.Redis.from_url(app_settings.redis_url)
+
+logger = logging.getLogger(__name__)
 
 
 @celery_app.task(name="parsing_book_task")  # type: ignore[untyped-decorator]
@@ -88,8 +91,8 @@ def parsing_task(_db: Session, book: Book, job_id: int) -> bool:
             queue="cli_tasks",
             link=callback,
         )
-    except Exception as e:
-        print(e)
+    except Exception:
+        logger.exception(f"Error parsing book {book.id}")
         return False
     else:
         return True

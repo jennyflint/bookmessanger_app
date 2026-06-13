@@ -1,4 +1,5 @@
 import base64
+import logging
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
@@ -6,6 +7,8 @@ from urllib.parse import urlparse
 from src.services.avatar_service import AvatarService
 from src.settings.settings import character_avatar_settings
 
+
+logger = logging.getLogger(__name__)
 
 BASE_AVATAR_DIR = Path("/app") / character_avatar_settings.avatar_dir
 
@@ -34,15 +37,15 @@ class ReplaceModelValues:
 
     def _read_image_as_base64(self, file_path: Path) -> str | None:
         if not file_path.exists():
-            print(f"Error file not found: {file_path}")
+            logger.error(f"Error file not found: {file_path}")
             return None
 
         try:
             with file_path.open("rb") as image_file:
                 encoded_string = base64.b64encode(image_file.read()).decode("utf-8")
                 return f"data:image/png;base64,{encoded_string}"
-        except Exception as e:
-            print(f"Error reading file {file_path}: {e}")
+        except Exception:
+            logger.exception(f"Error reading file {file_path}")
             return None
 
     def _encode_avatars_to_base64(self, characters: list[dict[str, Any]]) -> None:

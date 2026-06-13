@@ -1,4 +1,5 @@
 import json
+import logging
 from collections.abc import Callable
 from typing import Any, TypeVar
 
@@ -14,6 +15,7 @@ from src.settings.settings import app_settings
 
 
 T = TypeVar("T")
+logger = logging.getLogger(__name__)
 
 
 class JobCeleryService:
@@ -130,5 +132,7 @@ class JobCeleryService:
 
                 self._update_job_status(db, job, JobStatusEnum.FAILED)
                 res_message = f"Failed to process job {self.job_id}: Error -> {e!s}"
+
+                logger.exception(res_message)
 
             return res_message

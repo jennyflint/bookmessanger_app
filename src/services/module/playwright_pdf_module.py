@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 from typing import Any
 
@@ -7,6 +8,8 @@ from src.exceptions.convert_exception import ConvertPdfError
 
 
 PLAYWRIGHT_TIMEOUT = 3000000
+
+logger = logging.getLogger(__name__)
 
 
 class PlaywrightPDFGenerator:
@@ -57,6 +60,8 @@ class PlaywrightPDFGenerator:
             target_path.parent.mkdir(parents=True, exist_ok=True)
             target_path.write_bytes(pdf_bytes)
         except Exception as e:
-            raise ConvertPdfError(str(e)) from e
+            err_msg = f"Error saving PDF to file {file_path}"
+            logger.exception(err_msg)
+            raise ConvertPdfError(err_msg) from e
         else:
             return True
