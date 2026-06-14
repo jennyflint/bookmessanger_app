@@ -22,7 +22,7 @@ def convert_book_task(job_id: int, format_type: FormatTypeEnum, user_id: int) ->
     websocket_channel = f"user_notifications_{user_id}"
     ws_data = {
         "type": WebsocketTypeEnum.BOOK_CONVERTED,
-        "book_id": export_book.id,
+        "book_id": export_book.book_id,
         "convert_item_id": export_book.id,
     }
 
