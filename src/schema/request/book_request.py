@@ -13,6 +13,7 @@ APP_URL = os.getenv("APP_URL", "")
 class Character(BaseModel):
     id: int
     avatar: HttpUrl
+    name: str
 
     @field_validator("avatar")
     @classmethod

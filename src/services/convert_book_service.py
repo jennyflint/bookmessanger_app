@@ -13,8 +13,15 @@ from src.settings.settings import app_settings, book_settings
 from src.utils.storage import Storage
 
 
+WATEMARK_TEXT = "This book was created on"
+
+
 def get_converter_service() -> ConvertService:
-    playwright_gen = PlaywrightPDFGenerator(app_settings.playwright_ws_endpoint)
+    playwright_gen = PlaywrightPDFGenerator(
+        app_settings.playwright_ws_endpoint,
+        watermark_domain=app_settings.marketing_url,
+        watermark_text=WATEMARK_TEXT,
+    )
     pdf_converter = PdfConverter(playwright_gen)
     service = ConvertService()
     service.register(FormatTypeEnum.PDF, pdf_converter)

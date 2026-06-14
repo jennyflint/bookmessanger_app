@@ -30,7 +30,7 @@ asyncpg==0.31.0
     # via -r requirements.in
 authlib==1.7.2
     # via -r requirements.in
-authx==1.6.0
+authx==1.7.0
     # via -r requirements.in
 billiard==4.2.4
     # via celery
@@ -55,7 +55,6 @@ click==8.4.1
     #   click-didyoumean
     #   click-plugins
     #   click-repl
-    #   typer
     #   uvicorn
 click-didyoumean==0.3.1
     # via celery
@@ -63,14 +62,14 @@ click-plugins==1.1.1.2
     # via celery
 click-repl==0.3.0
     # via celery
-cryptography==48.0.0
+cryptography==49.0.0
     # via
     #   authlib
     #   joserfc
     #   pyjwt
 dotenv==0.9.9
     # via -r requirements.in
-fastapi==0.136.1
+fastapi==0.137.0
     # via
     #   -r requirements.in
     #   authx
@@ -90,7 +89,7 @@ httpx==0.28.1
     # via -r requirements.in
 humanize==4.15.0
     # via flower
-idna==3.16
+idna==3.18
     # via
     #   anyio
     #   httpx
@@ -101,7 +100,7 @@ itsdangerous==2.2.0
     # via authx
 jinja2==3.1.6
     # via -r requirements.in
-joserfc==1.6.7
+joserfc==1.7.1
     # via authlib
 kombu==5.6.2
     # via celery
@@ -162,7 +161,9 @@ pyjwt[crypto]==2.13.0
     # via
     #   -r requirements.in
     #   authx
-pytest==9.0.3
+pymupdf==1.27.2.3
+    # via -r requirements.in
+pytest==9.1.0
     # via -r requirements.in
 python-dateutil==2.9.0.post0
     # via
@@ -172,33 +173,33 @@ python-dotenv==1.2.2
     # via
     #   dotenv
     #   pydantic-settings
-python-multipart==0.0.29
+python-multipart==0.0.32
     # via -r requirements.in
 pytz==2026.2
     # via
     #   authx
     #   flower
-redis==7.4.0
+redis==8.0.0
     # via -r requirements.in
 requests==2.34.2
     # via -r requirements.in
 rich==15.0.0
     # via typer
-ruff==0.15.14
+ruff==0.15.17
     # via -r requirements.in
 shellingham==1.5.4
     # via typer
 six==1.17.0
     # via python-dateutil
-sqlalchemy==2.0.49
+sqlalchemy==2.0.50
     # via
     #   -r requirements.in
     #   alembic
-starlette==1.0.1
+starlette==1.3.1
     # via fastapi
-tornado==6.5.5
+tornado==6.5.7
     # via flower
-typer[all]==0.25.1
+typer[all]==0.26.7
     # via -r requirements.in
 types-aiofiles==25.1.0.20260518
     # via -r requirements.in
@@ -223,14 +224,14 @@ tzlocal==5.3.1
     # via celery
 urllib3==2.7.0
     # via requests
-uvicorn==0.47.0
+uvicorn==0.49.0
     # via -r requirements.in
 vine==5.1.0
     # via
     #   amqp
     #   celery
     #   kombu
-wcwidth==0.7.0
+wcwidth==0.8.1
     # via prompt-toolkit
 websockets==16.0
     # via -r requirements.in

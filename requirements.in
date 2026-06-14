@@ -26,3 +26,4 @@ websockets
 pydantic-settings
 typer[all]
 requests
+pymupdf
