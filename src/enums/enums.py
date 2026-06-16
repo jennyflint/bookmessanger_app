@@ -18,7 +18,6 @@ class TemplateTypeEnum(StrEnum):
     SPACE = "space"
     SPRINGFIELD = "springfield"
     TYPEWRITER = "typewriter"
-    YELLOW_SPACE = "yellow-space"
 
 
 class FormatTypeEnum(StrEnum):
