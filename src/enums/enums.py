@@ -2,7 +2,23 @@ from enum import StrEnum
 
 
 class TemplateTypeEnum(StrEnum):
-    SIMPLE_TEST = "simple-test"
+    AUTUMN = "autumn"
+    CARTOON = "cartoon"
+    DARK = "dark"
+    DEFAULT_LIGHT = "default-light"
+    DEFAULT_PURPLE = "default-purple"
+    DEFAULT_WHITE = "default-white"
+    GREEN_CARTOON = "green-cartoon"
+    JUNIOR = "junior"
+    LIGHT = "light"
+    PINK_CARTOON = "pink-cartoon"
+    PINK_GOTHIC = "pink-gothic"
+    PINK_PONY = "pink-pony"
+    ROBOT = "robot"
+    SPACE = "space"
+    SPRINGFIELD = "springfield"
+    TYPEWRITER = "typewriter"
+    YELLOW_SPACE = "yellow-space"
 
 
 class FormatTypeEnum(StrEnum):

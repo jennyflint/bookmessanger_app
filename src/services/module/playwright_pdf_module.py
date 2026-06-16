@@ -45,7 +45,7 @@ class PlaywrightPDFGenerator:
                 )
 
                 x = rect.width / 2 - text_width / 2
-                y = rect.height - 20
+                y = rect.height - 5
                 point = fitz.Point(x, y)
 
                 page.insert_text(
@@ -91,12 +91,6 @@ class PlaywrightPDFGenerator:
             raw_pdf_bytes = page.pdf(
                 format="A4",
                 print_background=True,
-                margin={
-                    "top": "20px",
-                    "right": "20px",
-                    "bottom": "40px",
-                    "left": "20px",
-                },
             )
 
             browser.close()

@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>{{ title }}</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Noto+Sans+JP:wght@400;500&display=swap');
+
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Noto Sans JP', system-ui, sans-serif;
+    font-weight: 400;
+    background-color: #fafafa;
+    background-image: 
+        linear-gradient(rgba(230, 235, 240, 0.5) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(230, 235, 240, 0.5) 1px, transparent 1px);
+    background-size: 40px 40px;
+    color: #1a1d20;
+    -webkit-font-smoothing: antialiased;
+}
+
+.chat {
+    max-width: 720px;
+    margin: 20px auto;
+    padding: 16px;
+    width: 100%;
+}
+
+.msg {
+    display: flex;
+    margin: 28px 0;
+    align-items: flex-end;
+    break-inside: avoid;
+    page-break-inside: avoid;
+}
+
+.left { justify-content: flex-start; }
+.right { justify-content: flex-end; }
+
+.msg-col {
+    display: flex;
+    flex-direction: column;
+    max-width: 75%;
+}
+
+.left .msg-col { align-items: flex-start; }
+.right .msg-col { align-items: flex-end; }
+
+.avatar {
+    width: 42px;
+    height: 42px;
+    border: 1px solid #d0d5dd;
+    border-radius: 50%;
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    margin: 0 14px;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.bubble {
+    position: relative;
+    padding: 12px 18px;
+    font-size: 19px;
+    line-height: 1.6;
+    border: 1px solid;
+    word-wrap: break-word;
+    width: fit-content;
+    break-inside: avoid;
+    page-break-inside: avoid;
+    letter-spacing: 0.3px;
+}
+
+.left .bubble {
+    background: #ffffff;
+    border-color: #e4e7ec;
+    border-radius: 16px 16px 16px 4px;
+}
+
+.right .bubble {
+    background: #f0f5ff;
+    border-color: #d1e0ff;
+    border-radius: 16px 16px 4px 16px;
+}
+
+.name {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+}
+
+.system {
+    text-align: center;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 19px;
+    font-weight: 500;
+    line-height: 1.4;
+    color: #475467;
+    margin: 36px auto;
+    padding: 8px 20px;
+    border: 1px dashed #d0d5dd;
+    border-radius: 8px;
+    background: #f2f4f7;
+    max-width: 80%;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    break-inside: avoid;
+    page-break-inside: avoid;
+}
+
+.meta {
+    font-size: 13px;
+    margin-top: 8px;
+    padding-top: 6px;
+}
+
+.left .meta {
+    border-top: 1px dashed #e4e7ec;
+    color: #667085;
+}
+
+.right .meta {
+    border-top: 1px dashed #d1e0ff;
+    color: #667085;
+}
+
+.reactions {
+    position: absolute;
+    bottom: -16px;
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 1px 8px;
+    font-size: 12px;
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    z-index: 10;
+    white-space: nowrap;
+}
+
+.left .reactions { 
+    right: 14px; 
+    border: 1px solid #e4e7ec;
+}
+.right .reactions { 
+    left: 14px; 
+    border: 1px solid #d1e0ff;
+}
+
+.reaction-count {
+    font-weight: 500;
+    color: #344054;
+    font-size: 11px;
+}
+
+
+@media print {
+    @page {
+        size: A4;
+        margin: 0 !important;
+    }
+
+    body {
+        margin: 0 !important;
+        padding: 0 !important;
+        background-color: #ffe680 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    body::before {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 20mm;
+        background: transparent;
+        pointer-events: none;
+    }
+
+    body::after {
+        content: "";
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 20mm;
+        background: transparent;
+        pointer-events: none;
+    }
+
+    .chat {
+        max-width: 100% !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 20mm !important; 
+        display: block !important;
+    }
+    .msg {
+        break-inside: avoid !important;
+        page-break-inside: avoid !important;
+        margin-top: 6mm !important;
+        margin-bottom: 6mm !important;
+    }
+
+    .system {
+        break-inside: avoid !important;
+        page-break-inside: avoid !important;
+        margin: 10mm auto !important;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="chat" id="chat"></div>
+
+<script type="application/json" id="book-data">
+{{ json_data }}
+</script>
+
+<script>
+const data = JSON.parse(document.getElementById("book-data").textContent);
+const chat = document.getElementById("chat");
+
+const charMap = new Map(data.characters.map(c => [c.id, c]));
+
+function getColor(id) {
+    const colors = ["#2f54eb", "#f5222d", "#52c41a", "#fa8c16", "#722ed1", "#eb2f96", "#13c2c2"];
+    return colors[id % colors.length];
+}
+
+function getFallbackEmoji(id) {
+    const icons = ['🤖', '🦾', '🦿', '🔋', '⚙️', '⚡', '📡', '💻', '🔮'];
+    return icons[id % icons.length];
+}
+
+function getRandomReactions() {
+    if (Math.random() > 0.7) return null;
+
+    const emojis = ['🤖', '⚡', '⚙️', '🔋', '🛑', '🔵', '⚪'];
+    const count = Math.random() > 0.8 ? 2 : 1;
+    const selected = [];
+    
+    for (let i = 0; i < count; i++) {
+        const r = emojis[Math.floor(Math.random() * emojis.length)];
+        if (!selected.includes(r)) selected.push(r);
+    }
+    
+    if (selected.length === 0) return null;
+
+    const div = document.createElement("div");
+    div.className = "reactions";
+    div.innerHTML = selected.map(e => `
+        <span>
+            ${e} <span class="reaction-count">${Math.floor(Math.random() * 5) + 1}</span>
+        </span>
+    `).join('');
+    
+    return div;
+}
+
+function createMessage({ text, name, isRight, color, metaText, authorId, avatarUrl }) {
+    const div = document.createElement("div");
+    div.className = "msg " + (isRight ? "right" : "left");
+
+    const av = document.createElement("div");
+    av.className = "avatar";
+
+    if (avatarUrl) {
+        const img = document.createElement("img");
+        img.src = avatarUrl;
+        img.alt = name;
+        img.onerror = function() {
+            av.textContent = getFallbackEmoji(authorId);
+        };
+        av.appendChild(img);
+    } else {
+        av.textContent = getFallbackEmoji(authorId);
+    }
+
+    const col = document.createElement("div");
+    col.className = "msg-col";
+
+    const bubble = document.createElement("div");
+    bubble.className = "bubble";
+
+    const textDiv = document.createElement("div");
+    textDiv.textContent = text;
+    bubble.appendChild(textDiv);
+
+    if (metaText) {
+        const meta = document.createElement("div");
+        meta.className = "meta";
+        meta.textContent = metaText;
+        bubble.appendChild(meta);
+    }
+
+    const reactions = getRandomReactions();
+    if (reactions) {
+        bubble.appendChild(reactions);
+    }
+
+    const nameDiv = document.createElement("div");
+    nameDiv.className = "name";
+    nameDiv.textContent = name;
+    nameDiv.style.color = color;
+    
+    col.appendChild(nameDiv);
+    col.appendChild(bubble);
+
+    if (isRight) {
+        div.appendChild(col);
+        div.appendChild(av);
+    } else {
+        div.appendChild(av);
+        div.appendChild(col);
+    }
+
+    return div;
+}
+
+function render(line) {
+    if (!line.is_dialogue) {
+        const sys = document.createElement("div");
+        sys.className = "system";
+        sys.textContent = line.content;
+        return [sys];
+    }
+
+    let aId = line.author_id;
+    let name = "Невідомий";
+    let avatarUrl = null;
+    
+    if (aId !== null) {
+        const char = charMap.get(aId);
+        name = char?.name || "Невідомий";
+        avatarUrl = char?.avatar || null;
+    } else {
+        aId = 999;
+    }
+
+    const color = getColor(aId);
+    const isRight = (aId % 2 !== 0);
+
+    const messages = [];
+
+    if (line.parts && line.parts.length) {
+        messages.push(
+            createMessage({
+                text: line.parts[0].trim(),
+                name,
+                isRight,
+                color,
+                metaText: line.parts[1]?.trim(),
+                authorId: aId,
+                avatarUrl
+            })
+        );
+
+        for (let i = 2; i < line.parts.length; i++) {
+            const part = line.parts[i].trim();
+            if (!part) continue;
+
+            messages.push(
+                createMessage({
+                    text: part,
+                    name,
+                    isRight,
+                    color,
+                    authorId: aId,
+                    avatarUrl
+                })
+            );
+        }
+    } else {
+        messages.push(
+            createMessage({
+                text: line.content,
+                name,
+                isRight,
+                color,
+                authorId: aId,
+                avatarUrl
+            })
+        );
+    }
+
+    return messages;
+}
+
+data.lines.forEach(line => {
+    render(line).forEach(el => chat.appendChild(el));
+});
+</script>
+
+</body>
+</html>

@@ -13,7 +13,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
-from src.enums.enums import FormatTypeEnum, TemplateTypeEnum
+from src.enums.enums import FormatTypeEnum
 from src.enums.export_book import ExportBookStatusEnum
 from src.models.base import Base
 from src.models.mixin import SoftDeleteMixin
@@ -58,8 +58,8 @@ class ExportBook(Base):
         Enum(FormatTypeEnum, native_enum=False, length=40),
         nullable=False,
     )
-    template: Mapped[TemplateTypeEnum] = mapped_column(
-        Enum(TemplateTypeEnum, native_enum=False, length=40),
+    template = mapped_column(
+        String(40),
         nullable=True,
     )
     characters: Mapped[dict[str, Any] | list[Any] | None] = mapped_column(
