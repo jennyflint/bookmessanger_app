@@ -3,8 +3,8 @@ from typing import Any
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.enums.book import BookActionStatusEnum
 from src.enums.enums import FormatTypeEnum, TemplateTypeEnum
-from src.enums.export_book import ExportBookStatusEnum
 from src.models.book import Book, ExportBook
 from src.models.job import Job, JobTypeEnum
 from src.schema.request.book_request import Character
@@ -52,7 +52,7 @@ class ExportBookService:
         clean_characters_dict = jsonable_encoder(characters)
         export_book = ExportBook(
             book_id=book.id,
-            status=ExportBookStatusEnum.PENDING,
+            status=BookActionStatusEnum.PENDING,
             format=format_file,
             template=template,
             characters=clean_characters_dict,

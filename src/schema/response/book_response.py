@@ -2,7 +2,7 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict
 
-from src.enums.export_book import ExportBookStatusEnum
+from src.enums.book import BookActionStatusEnum
 from src.schema.response.job_response import JobResponse
 
 
@@ -15,7 +15,7 @@ class ExportBookResponse(BaseModel):
     id: int
     name: str | None = None
     book_id: int
-    status: ExportBookStatusEnum
+    status: BookActionStatusEnum
     format: str
     created_at: datetime
     updated_at: datetime

@@ -3,8 +3,8 @@ import logging
 from sqlalchemy.orm import Session
 
 from src.celery_app import celery_app
+from src.enums.book import BookActionStatusEnum
 from src.enums.enums import FormatTypeEnum
-from src.enums.export_book import ExportBookStatusEnum
 from src.enums.websocket_enums import WebsocketTypeEnum
 from src.models.book import ExportBook
 from src.services.convert_book_service import ConvertBookService
@@ -40,7 +40,7 @@ def convert_task(
     format_type: FormatTypeEnum,
 ) -> bool:
     export_book = db.merge(export_book)
-    export_book.status = ExportBookStatusEnum.PENDING
+    export_book.status = BookActionStatusEnum.PENDING
     db.commit()
 
     book = export_book.book
@@ -56,12 +56,12 @@ def convert_task(
         )
         filename = cbs.main()
 
-        export_book.status = ExportBookStatusEnum.COMPLETED
+        export_book.status = BookActionStatusEnum.COMPLETED
         export_book.export_filename = filename
 
     except Exception:
         logger.exception(f"Error converting book {export_book.id}")
-        export_book.status = ExportBookStatusEnum.FAILED
+        export_book.status = BookActionStatusEnum.FAILED
         return False
     finally:
         db.commit()

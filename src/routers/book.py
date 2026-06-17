@@ -25,7 +25,7 @@ from src.dependencies import (
     get_export_book_list_service,
     get_export_book_service,
 )
-from src.enums.export_book import ExportBookStatusEnum
+from src.enums.book import BookActionStatusEnum
 from src.exceptions.validate_book_model_exception import ModelBookValidatorError
 from src.models.book import Book, ExportBook
 from src.models.job import Job, JobStatusEnum, JobTypeEnum
@@ -176,12 +176,12 @@ async def download_export_item(
     export_book: Annotated[ExportBook, Depends(get_export_book_if_owner)],
 ) -> FileResponse:
 
-    if export_book.status == ExportBookStatusEnum.REMOVED:
+    if export_book.status == BookActionStatusEnum.REMOVED:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Export book was removed"
         )
 
-    if export_book.status != ExportBookStatusEnum.COMPLETED:
+    if export_book.status != BookActionStatusEnum.COMPLETED:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Export book is not completed",
@@ -213,7 +213,7 @@ async def delete_export_item(
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> StatusResponse:
 
-    if export_book.status == ExportBookStatusEnum.PENDING:
+    if export_book.status == BookActionStatusEnum.PENDING:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Export book is pending"
         )

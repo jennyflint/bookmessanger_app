@@ -38,7 +38,7 @@ def upgrade() -> None:
                 "COMPLETED",
                 "FAILED",
                 "REMOVED",
-                name="exportbookstatusenum",
+                name="BookActionStatusEnum",
                 native_enum=False,
                 length=40,
             ),

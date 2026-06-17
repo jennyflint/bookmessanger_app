@@ -13,8 +13,8 @@ from sqlalchemy import (
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
+from src.enums.book import BookActionStatusEnum
 from src.enums.enums import FormatTypeEnum
-from src.enums.export_book import ExportBookStatusEnum
 from src.models.base import Base
 from src.models.mixin import SoftDeleteMixin
 from src.models.user import User
@@ -49,9 +49,9 @@ class ExportBook(Base):
     )
     name: Mapped[str] = mapped_column(String, nullable=True)
     export_filename: Mapped[str] = mapped_column(String, nullable=True)
-    status: Mapped[ExportBookStatusEnum] = mapped_column(
-        Enum(ExportBookStatusEnum, native_enum=False, length=40),
-        default=ExportBookStatusEnum.NEW,
+    status: Mapped[BookActionStatusEnum] = mapped_column(
+        Enum(BookActionStatusEnum, native_enum=False, length=40),
+        default=BookActionStatusEnum.NEW,
         nullable=False,
     )
     format: Mapped[FormatTypeEnum] = mapped_column(

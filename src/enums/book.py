@@ -1,7 +1,7 @@
 from enum import StrEnum
 
 
-class ExportBookStatusEnum(StrEnum):
+class BookActionStatusEnum(StrEnum):
     NEW = "new"
     PENDING = "pending"
     COMPLETED = "completed"
