@@ -10,7 +10,11 @@ celery_app = Celery(
     "worker",
     broker=REDIS_URL,
     backend=REDIS_URL,
-    include=["src.tasks.parsing_book_task", "src.tasks.convert_book_task"],
+    include=[
+        "src.tasks.parsing_book_task",
+        "src.tasks.convert_book_task",
+        "src.tasks.convert_upload_book_task",
+    ],
 )
 
 celery_app.conf.broker_connection_retry_on_startup = True

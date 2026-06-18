@@ -27,3 +27,6 @@ pydantic-settings
 typer[all]
 requests
 pymupdf
+beautifulsoup4
+lxml
+EbookLib

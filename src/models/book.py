@@ -40,6 +40,10 @@ class Book(Base, SoftDeleteMixin):
         "ExportBook", back_populates="book", cascade="all, delete-orphan"
     )
 
+    upload_book_converters: Mapped[list[UploadBookConverter]] = relationship(
+        "UploadBookConverter", back_populates="book", cascade="all, delete-orphan"
+    )
+
 
 class ExportBook(Base):
     __tablename__ = "export_books"
@@ -73,3 +77,26 @@ class ExportBook(Base):
     )
 
     book: Mapped[Book] = relationship(back_populates="export_books")
+
+
+class UploadBookConverter(Base):
+    __tablename__ = "upload_book_converters"
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, index=True)
+    book_id: Mapped[int] = mapped_column(
+        ForeignKey("books.id", ondelete="CASCADE"), index=True
+    )
+    status: Mapped[BookActionStatusEnum] = mapped_column(
+        Enum(BookActionStatusEnum, native_enum=False, length=40),
+        default=BookActionStatusEnum.NEW,
+        nullable=False,
+    )
+    extension: Mapped[str] = mapped_column(String, nullable=False)
+    filename: Mapped[str] = mapped_column(String, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+    book: Mapped[Book] = relationship(back_populates="upload_book_converters")

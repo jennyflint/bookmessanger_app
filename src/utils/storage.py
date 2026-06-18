@@ -29,3 +29,8 @@ class Storage:
         path_to_folder = book_settings.storage_export_book
 
         return Path(path_to_folder) / str(user_id) / str(book_id) / export_filename
+
+    @staticmethod
+    def get_upload_book(user_id: int, upload_filename: str) -> Path:
+        path_to_folder = book_settings.storage_book_original_upload_dir
+        return Path(path_to_folder) / str(user_id) / upload_filename

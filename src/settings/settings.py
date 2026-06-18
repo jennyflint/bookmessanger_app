@@ -43,9 +43,14 @@ class AuthSettings(BaseSettings):
 
 
 class BookSettings(BaseSettings):
-    max_file_size: str = "15MB"
-    allowed_content_types: list[str] = ["text/plain"]
-    allowed_extensions: list[str] = [".txt"]
+    allowed_extensions: set[str] = {".epub", ".txt", ".fb2"}
+    allowed_content_types: set[str] = {
+        "application/epub+zip",
+        "text/plain",
+        "application/octet-stream",
+    }
+
+    max_size: str = "20MB"
     prefix_book_name: str = "book_"
     book_html_template: Path = Path("uploads/books/users")
     storage: Path = Path("storage")
@@ -53,6 +58,10 @@ class BookSettings(BaseSettings):
     @property
     def storage_book_upload_dir(self) -> Path:
         return Path("/app") / "storage" / "upload_books"
+
+    @property
+    def storage_book_original_upload_dir(self) -> Path:
+        return Path("/app") / "storage" / "upload_books" / "original"
 
     @property
     def storage_model_book_dir(self) -> Path:

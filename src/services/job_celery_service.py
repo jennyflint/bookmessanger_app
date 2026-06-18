@@ -29,6 +29,8 @@ class JobCeleryService:
         self.is_callback = is_callback
         self._create_initial()
         self.redis_client: redis.Redis | None = None
+        self.channel: str | None = None
+        self.ws_data: dict[str, Any] | None = None
 
         if self.is_publish:
             self._create_redis_client()

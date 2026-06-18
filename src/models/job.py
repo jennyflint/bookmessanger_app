@@ -21,6 +21,7 @@ class JobStatusEnum(enum.StrEnum):
 class JobTypeEnum(enum.StrEnum):
     BOOK_PARSING = "book_parsing"
     BOOK_CONVERTING = "book_converting"
+    UPLOAD_BOOK_CONVERTING = "upload_book_converting"
 
 
 class Job(Base):

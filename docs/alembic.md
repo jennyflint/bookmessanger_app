@@ -23,3 +23,8 @@ docker-compose restart api_app
 ```bash
 docker-compose exec api_app alembic downgrade base
 ```
+
+### Refresh Last migration
+```bash
+docker-compose exec api_app alembic downgrade -1
+```

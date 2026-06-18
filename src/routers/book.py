@@ -40,15 +40,16 @@ from src.services.book_list_service import BookListService
 from src.services.export_book_list_service import ExportBookListService
 from src.services.export_book_service import ExportBookService
 from src.services.upload_book_service import UploadBookService
+from src.settings.settings import book_settings
 from src.utils.storage import Storage
 
 
 router = APIRouter()
 
 book_validator = file_validator_dependency(
-    allowed_extensions={".pdf", ".txt"},
-    allowed_content_types={"application/pdf", "text/plain"},
-    max_size="15MB",
+    allowed_extensions=book_settings.allowed_extensions,
+    allowed_content_types=book_settings.allowed_content_types,
+    max_size=book_settings.max_size,
 )
 
 

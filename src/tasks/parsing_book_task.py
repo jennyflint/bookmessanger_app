@@ -70,7 +70,7 @@ def parsing_book_callback(
 
 
 def parsing_task(_db: Session, book: Book, job_id: int) -> bool:
-    bookname = "book_" + str(book.id) + Path(book.original_name).suffix
+    bookname = "book_" + str(book.id) + ".txt"
     user_upload_dir = Path(str(book.user_id))
     user_model_dir = Path(str(book.user_id))
     input_file = str(user_upload_dir / bookname)
