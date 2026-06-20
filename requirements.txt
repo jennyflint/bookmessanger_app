@@ -50,7 +50,9 @@ cffi==2.0.0
     #   argon2-cffi-bindings
     #   cryptography
 charset-normalizer==3.4.7
-    # via requests
+    # via
+    #   -r requirements.in
+    #   requests
 click==8.4.1
     # via
     #   celery
@@ -73,7 +75,7 @@ dotenv==0.9.9
     # via -r requirements.in
 ebooklib==0.20
     # via -r requirements.in
-fastapi==0.137.2
+fastapi==0.138.0
     # via
     #   -r requirements.in
     #   authx
@@ -155,7 +157,7 @@ pydantic==2.13.4
     #   pydantic-settings
 pydantic-core==2.46.4
     # via pydantic
-pydantic-settings==2.14.1
+pydantic-settings==2.14.2
     # via
     #   -r requirements.in
     #   authx
@@ -171,7 +173,7 @@ pyjwt[crypto]==2.13.0
     #   authx
 pymupdf==1.27.2.3
     # via -r requirements.in
-pytest==9.1.0
+pytest==9.1.1
     # via -r requirements.in
 python-dateutil==2.9.0.post0
     # via

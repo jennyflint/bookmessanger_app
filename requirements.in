@@ -30,3 +30,4 @@ pymupdf
 beautifulsoup4
 lxml
 EbookLib
+charset-normalizer

@@ -2,6 +2,7 @@ import uuid
 from pathlib import Path
 
 import aiofiles
+import charset_normalizer
 from fastapi import UploadFile
 
 from src.exceptions.file_exception import FileSaveError
@@ -37,9 +38,12 @@ class FileService:
 
         try:
             if ext == ".txt":
+                content_bytes = await file.read()
+                detected = charset_normalizer.detect(content_bytes)
+                encoding = detected.get("encoding") or "utf-8"
+                text_content = content_bytes.decode(encoding, errors="replace")
                 async with aiofiles.open(file_path, "w", encoding="utf-8") as out_file:
-                    while content := await file.read(1024 * 1024):
-                        await out_file.write(content.decode("utf-8", errors="replace"))
+                    await out_file.write(text_content)
             else:
                 async with aiofiles.open(file_path, "wb") as out_file:
                     while content := await file.read(1024 * 1024):
