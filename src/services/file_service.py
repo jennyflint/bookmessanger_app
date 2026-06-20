@@ -36,9 +36,15 @@ class FileService:
         file_path = Path(dir_path) / safe_name
 
         try:
-            async with aiofiles.open(file_path, "wb") as out_file:
-                while content := await file.read(1024 * 1024):
-                    await out_file.write(content)
+            if ext == ".txt":
+                async with aiofiles.open(file_path, "w", encoding="utf-8") as out_file:
+                    while content := await file.read(1024 * 1024):
+                        await out_file.write(content.decode("utf-8", errors="replace"))
+            else:
+                async with aiofiles.open(file_path, "wb") as out_file:
+                    while content := await file.read(1024 * 1024):
+                        await out_file.write(content)
+
         except Exception as err:
             err_msg = f"Error saving file: {err}"
             raise FileSaveError(err_msg) from err
