@@ -8,4 +8,5 @@ class CliParsingBookService:
             "log_mode": False,
             "save": path_to_save,
             "short": True,
+            "off_llm": True,
         }
