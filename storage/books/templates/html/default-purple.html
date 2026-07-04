@@ -2,18 +2,13 @@
 <html lang="uk">
     <head>
         <meta charset="UTF-8">
-        <meta
-            name="viewport"
+        <meta name="viewport"
             content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-
         <title>{{ title }}</title>
-
         <link
             href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap"
             rel="stylesheet" />
-
         <style>
-
 * {
     box-sizing: border-box;
 }
@@ -26,12 +21,9 @@ html {
 body {
     margin: 0;
     padding: 0;
-
     color: #2b2b2b;
     font-family: Inter, system-ui, sans-serif;
-
     background-color: #f6f8fc;
-
     background-image:
         linear-gradient(rgba(100,100,100,.06) 1px, transparent 1px),
         linear-gradient(
@@ -39,26 +31,20 @@ body {
             rgba(100,100,100,.06) 1px,
             transparent 1px
         );
-
     background-size: 24px 24px;
 }
 
 .chat {
     width: 100%;
     max-width: 920px;
-
     margin: 0 auto;
-
     padding: 16px;
 }
 
 .msg {
     display: flex;
-
     align-items: flex-end;
-
     margin: 16px 0;
-
     page-break-inside: avoid;
     break-inside: avoid;
 }
@@ -74,7 +60,6 @@ body {
 .msg-col {
     display: flex;
     flex-direction: column;
-
     max-width: 78%;
 }
 
@@ -89,165 +74,72 @@ body {
 .avatar {
     width: 42px;
     height: 42px;
-
     flex-shrink: 0;
-
     overflow: hidden;
-
     border-radius: 50%;
-
     background: white;
-
     border: 1px solid #d6dceb;
-
     margin: 0 8px;
 }
 
 .avatar img {
     width: 100%;
     height: 100%;
-
     object-fit: cover;
 }
 
 .bubble {
     padding: 12px 14px;
-
     line-height: 1.7;
-
-    font-size: 19px;
-
+    font-size: 17px;
     border-radius: 18px;
-
     border: 1px solid #d8dfea;
-
-    box-shadow:
-        0 2px 4px rgba(0,0,0,.04);
-
+    box-shadow: 0 2px 4px rgba(0,0,0,.04);
     page-break-inside: avoid;
     break-inside: avoid;
-
     word-break: break-word;
 }
 
 .left .bubble {
     background: white;
-
     border-bottom-left-radius: 6px;
 }
 
 .right .bubble {
     background: #eef7ff;
-
     border-bottom-right-radius: 6px;
 }
 
 .name {
-    font-family: "Press Start 2P", monospace;
-
-    font-size: 8px;
-
+    font-size: 11px;
     line-height: 1.5;
-
     margin-bottom: 6px;
-
-    opacity: .85;
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.9);
+    font-weight: bold;
 }
 
 .meta {
     margin-top: 8px;
-
     padding-top: 8px;
-
     border-top: 1px dashed #d6dceb;
-
     color: #666;
-
     font-size: 13px;
 }
 
 .system {
     margin: 24px auto;
-
     max-width: 700px;
     font-size: 19px;
-
     background: white;
-
     border: 1px solid #d8dfea;
-
     border-radius: 14px;
-
     padding: 14px;
-
     text-align: center;
-
     line-height: 1.7;
-
     color: #555;
-
     page-break-inside: avoid;
     break-inside: avoid;
 }
-
-
-@media print {
-    @page {
-        size: A4;
-        margin: 0 !important;
-    }
-
-    body {
-        margin: 0 !important;
-        padding: 0 !important;
-        background-color: #ffe680 !important;
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
-    }
-
-    body::before {
-        content: "";
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 20mm;
-        background: transparent;
-        pointer-events: none;
-    }
-
-    body::after {
-        content: "";
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        height: 20mm;
-        background: transparent;
-        pointer-events: none;
-    }
-
-    .chat {
-        max-width: 100% !important;
-        width: 100% !important;
-        margin: 0 !important;
-        padding: 0 20mm !important; 
-        display: block !important;
-    }
-    .msg {
-        break-inside: avoid !important;
-        page-break-inside: avoid !important;
-        margin-top: 6mm !important;
-        margin-bottom: 6mm !important;
-    }
-
-    .system {
-        break-inside: avoid !important;
-        page-break-inside: avoid !important;
-        margin: 10mm auto !important;
-    }
-}
-
 </style>
     </head>
 
@@ -260,131 +152,75 @@ body {
 </script>
 
         <script>
-
-const data = JSON.parse(
-    document.getElementById("book-data").textContent
-);
-
+const data = JSON.parse(document.getElementById("book-data").textContent);
 const chat = document.getElementById("chat");
-
-const charMap = new Map(
-    data.characters.map(c => [c.id, c])
-);
+const charMap = new Map(data.characters.map(c => [c.id, c]));
 
 function getColor(id) {
     const colors = [
-        "#4f46e5",
-        "#0ea5e9",
-        "#16a34a",
-        "#f97316",
-        "#9333ea",
-        "#ec4899",
-        "#0891b2",
-        "#ca8a04"
+        "#3730a3",
+        "#0369a1",
+        "#15803d",
+        "#c2410c",
+        "#7e22ce",
+        "#be185d",
+        "#0e7490",
+        "#a16207"
     ];
-
     return colors[Math.abs(id) % colors.length];
 }
 
 function getFallbackEmoji(id) {
-
-    const icons = [
-        "👽",
-        "🤖",
-        "🧙",
-        "🚀",
-        "👾",
-        "🌟",
-        "🛰️",
-        "🪐"
-    ];
-
+    const icons = ["👽", "🤖", "🧙", "🚀", "👾", "🌟", "🛰️", "🪐"];
     return icons[Math.abs(id) % icons.length];
 }
 
-function createMessage({
-    text,
-    name,
-    isRight,
-    color,
-    metaText,
-    authorId,
-    avatarUrl
-}) {
-
+function createMessage({ text, name, isRight, color, metaText, authorId, avatarUrl }) {
     const root = document.createElement("div");
-
-    root.className =
-        "msg " + (isRight ? "right" : "left");
+    root.className = "msg " + (isRight ? "right" : "left");
 
     const avatar = document.createElement("div");
-
     avatar.className = "avatar";
 
     if (avatarUrl) {
-
         const img = document.createElement("img");
-
         img.src = avatarUrl;
-
         img.alt = name;
-
         img.onerror = () => {
-            avatar.textContent =
-                getFallbackEmoji(authorId);
+            avatar.textContent = getFallbackEmoji(authorId);
         };
-
         avatar.appendChild(img);
-
     } else {
-
-        avatar.textContent =
-            getFallbackEmoji(authorId);
+        avatar.textContent = getFallbackEmoji(authorId);
     }
 
     const col = document.createElement("div");
-
     col.className = "msg-col";
 
     const nameDiv = document.createElement("div");
-
     nameDiv.className = "name";
-
     nameDiv.textContent = name;
-
     nameDiv.style.color = color;
 
     const bubble = document.createElement("div");
-
     bubble.className = "bubble";
-
     bubble.textContent = text;
 
     if (metaText) {
-
         const meta = document.createElement("div");
-
         meta.className = "meta";
-
         meta.textContent = metaText;
-
         bubble.appendChild(meta);
     }
 
     col.appendChild(nameDiv);
-
     col.appendChild(bubble);
 
     if (isRight) {
-
         root.appendChild(col);
-
         root.appendChild(avatar);
-
     } else {
-
         root.appendChild(avatar);
-
         root.appendChild(col);
     }
 
@@ -392,126 +228,65 @@ function createMessage({
 }
 
 function renderLine(line) {
-
     if (!line.is_dialogue) {
-
         const sys = document.createElement("div");
-
         sys.className = "system";
-
         sys.textContent = line.content;
-
         return [sys];
     }
 
     let authorId = line.author_id;
-
     let name = "Невідомий";
-
     let avatarUrl = null;
 
     if (authorId !== null) {
-
-        const character =
-            charMap.get(authorId);
-
+        const character = charMap.get(authorId);
         if (character) {
-
             name = character.name;
-
-            avatarUrl =
-                character.avatar || null;
+            avatarUrl = character.avatar || null;
         }
-
     } else {
-
         authorId = 999;
     }
 
-    const color =
-        getColor(authorId);
-
-    const isRight =
-        authorId % 2 === 0;
-
+    const color = getColor(authorId);
+    const isRight = authorId % 2 === 0;
     const result = [];
 
-    if (
-        line.parts &&
-        line.parts.length
-    ) {
+    const partsToShow = (line.parts && line.parts.length > 0) ? line.parts : [line.content];
+    
+    let targetIndex = line.author_index !== null && line.author_index !== undefined ? line.author_index - 1 : partsToShow.length - 1;
+    if (targetIndex < 0) targetIndex = 0;
 
-        result.push(
-            createMessage({
-                text:
-                    line.parts[0].trim(),
+    partsToShow.forEach((part, index) => {
+        const text = part.trim();
+        if (!text) return;
 
-                name,
-
-                isRight,
-
-                color,
-
-                metaText:
-                    line.parts[1]?.trim(),
-
-                authorId,
-
-                avatarUrl
-            })
-        );
-
-        for (
-            let i = 2;
-            i < line.parts.length;
-            i++
-        ) {
-
-            const part =
-                line.parts[i].trim();
-
-            if (!part) {
-                continue;
-            }
-
-            result.push(
-                createMessage({
-                    text: part,
-                    name,
-                    isRight,
-                    color,
-                    authorId,
-                    avatarUrl
-                })
-            );
+        let metaText = null;
+        const authorText = line.author_text || line.author_part;
+        if (authorText && index === targetIndex) {
+            metaText = authorText.trim();
         }
 
-    } else {
-
         result.push(
             createMessage({
-                text: line.content,
+                text,
                 name,
                 isRight,
                 color,
+                metaText,
                 authorId,
                 avatarUrl
             })
         );
-    }
+    });
 
     return result;
 }
 
 data.lines.forEach(line => {
-
-    renderLine(line)
-        .forEach(el =>
-            chat.appendChild(el)
-        );
+    renderLine(line).forEach(el => chat.appendChild(el));
 });
-
 </script>
-
     </body>
 </html>

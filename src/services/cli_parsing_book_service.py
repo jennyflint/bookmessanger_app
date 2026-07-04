@@ -9,4 +9,5 @@ class CliParsingBookService:
             "save": path_to_save,
             "short": True,
             "off_llm": True,
+            "normalize": True,
         }

@@ -102,7 +102,7 @@ body {
 .name {
     font-family: 'Share Tech Mono', monospace;
     font-size: 13px;
-    font-weight: bold;
+    font-weight: 700;
     margin-bottom: 6px;
     text-transform: uppercase;
     letter-spacing: 1px;
@@ -112,7 +112,7 @@ body {
     text-align: center;
     font-family: 'Share Tech Mono', monospace;
     font-size: 19px;
-    font-weight: bold;
+    font-weight: 700;
     line-height: 1.5;
     color: #4d3624;
     margin: 40px auto;
@@ -133,6 +133,7 @@ body {
     margin-top: 10px;
     border-top: 1px dashed #735135;
     padding-top: 8px;
+    font-weight: 700;
 }
 
 .reactions {
@@ -155,70 +156,11 @@ body {
 .right .reactions { left: 12px; }
 
 .reaction-count {
-    font-weight: bold;
+    font-weight: 700;
     color: #2b2118;
     font-family: 'Share Tech Mono', monospace;
     font-size: 11px;
 }
-
-
-@media print {
-    @page {
-        size: A4;
-        margin: 0 !important;
-    }
-
-    body {
-        margin: 0 !important;
-        padding: 0 !important;
-        background-color: #ffe680 !important;
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
-    }
-
-    body::before {
-        content: "";
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 20mm;
-        background: transparent;
-        pointer-events: none;
-    }
-
-    body::after {
-        content: "";
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        height: 20mm;
-        background: transparent;
-        pointer-events: none;
-    }
-
-    .chat {
-        max-width: 100% !important;
-        width: 100% !important;
-        margin: 0 !important;
-        padding: 0 20mm !important; 
-        display: block !important;
-    }
-    .msg {
-        break-inside: avoid !important;
-        page-break-inside: avoid !important;
-        margin-top: 6mm !important;
-        margin-bottom: 6mm !important;
-    }
-
-    .system {
-        break-inside: avoid !important;
-        page-break-inside: avoid !important;
-        margin: 10mm auto !important;
-    }
-}
-
 </style>
 </head>
 
@@ -237,13 +179,13 @@ const chat = document.getElementById("chat");
 const charMap = new Map(data.characters.map(c => [c.id, c]));
 
 function getColor(id) {
-    const colors = ["#8c6239", "#bf8f54", "#59402a", "#a6683b", "#733312", "#d9a05b", "#402412"];
-    return colors[id % colors.length];
+    const colors = ["#8c6239", "#5c677d", "#a3704c", "#4a5759", "#b5838d", "#6b705c", "#708d81"];
+    return colors[Math.abs(id) % colors.length];
 }
 
 function getFallbackEmoji(id) {
     const icons = ['⚙️', '🎩', '🦉', '⏳', '🗝️', '📜', '🧭', '🔮', '💼'];
-    return icons[id % icons.length];
+    return icons[Math.abs(id) % icons.length];
 }
 
 function getRandomReactions() {
@@ -355,47 +297,35 @@ function render(line) {
     const isRight = (aId % 2 !== 0);
 
     const messages = [];
-
-    if (line.parts && line.parts.length) {
-        messages.push(
-            createMessage({
-                text: line.parts[0].trim(),
-                name,
-                isRight,
-                color,
-                metaText: line.parts[1]?.trim(),
-                authorId: aId,
-                avatarUrl
-            })
-        );
-
-        for (let i = 2; i < line.parts.length; i++) {
-            const part = line.parts[i].trim();
-            if (!part) continue;
-
-            messages.push(
-                createMessage({
-                    text: part,
-                    name,
-                    isRight,
-                    color,
-                    authorId: aId,
-                    avatarUrl
-                })
-            );
-        }
-    } else {
-        messages.push(
-            createMessage({
-                text: line.content,
-                name,
-                isRight,
-                color,
-                authorId: aId,
-                avatarUrl
-            })
-        );
+    const partsToShow = (line.parts && line.parts.length > 0) ? line.parts : [line.content];
+    
+    let targetIndex = line.author_index !== null && line.author_index !== undefined ? line.author_index - 1 : partsToShow.length - 1;
+    if (targetIndex < 0) {
+        targetIndex = 0;
     }
+
+    partsToShow.forEach((part, index) => {
+        const text = part.trim();
+        if (!text) return;
+
+        let metaText = null;
+        const authorText = line.author_text || line.author_part;
+        if (authorText && index === targetIndex) {
+            metaText = authorText.trim();
+        }
+
+        messages.push(
+            createMessage({
+                text,
+                name,
+                isRight,
+                color,
+                metaText,
+                authorId: aId,
+                avatarUrl
+            })
+        );
+    });
 
     return messages;
 }

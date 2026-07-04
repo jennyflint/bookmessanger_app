@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="uk">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>{{ title }}</title>
-<style>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>{{ title }}</title>
+    <style>
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,500;0,700;1,500;1,700&family=Pacifico&display=swap');
 
 *, *::before, *::after {
@@ -106,6 +107,7 @@ body {
     font-weight: 400;
     margin-bottom: 4px;
     letter-spacing: 0.5px;
+    text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
 }
 
 .system {
@@ -161,84 +163,25 @@ body {
     color: #1a0033;
     font-size: 12px;
 }
-
-
-@media print {
-    @page {
-        size: A4;
-        margin: 0 !important;
-    }
-
-    body {
-        margin: 0 !important;
-        padding: 0 !important;
-        background-color: #ffe680 !important;
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
-    }
-
-    body::before {
-        content: "";
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 20mm;
-        background: transparent;
-        pointer-events: none;
-    }
-
-    body::after {
-        content: "";
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        height: 20mm;
-        background: transparent;
-        pointer-events: none;
-    }
-
-    .chat {
-        max-width: 100% !important;
-        width: 100% !important;
-        margin: 0 !important;
-        padding: 0 20mm !important; 
-        display: block !important;
-    }
-    .msg {
-        break-inside: avoid !important;
-        page-break-inside: avoid !important;
-        margin-top: 6mm !important;
-        margin-bottom: 6mm !important;
-    }
-
-    .system {
-        break-inside: avoid !important;
-        page-break-inside: avoid !important;
-        margin: 10mm auto !important;
-    }
-}
-
 </style>
-</head>
+  </head>
 
-<body>
+  <body>
 
-<div class="chat" id="chat"></div>
+    <div class="chat" id="chat"></div>
 
-<script type="application/json" id="book-data">
-{{ json_data }}
-</script>
+    <script type="application/json" id="book-data">
+      {{json_data}}
+    </script>
 
-<script>
+    <script>
 const data = JSON.parse(document.getElementById("book-data").textContent);
 const chat = document.getElementById("chat");
 
 const charMap = new Map(data.characters.map(c => [c.id, c]));
 
 function getColor(id) {
-    const colors = ["#ff007f", "#00f0ff", "#ffae00", "#9d00ff", "#00ff66", "#ff00aa", "#330066"];
+    const colors = ["#c40062", "#00737a", "#b35900", "#6a00cc", "#008033", "#b30077", "#330066"];
     return colors[id % colors.length];
 }
 
@@ -357,47 +300,33 @@ function render(line) {
     const isRight = (aId % 2 !== 0);
 
     const messages = [];
+    
+    let partsToShow = (line.parts && line.parts.length > 0) ? line.parts : [line.content];
+    
+    let targetIndex = line.author_index !== null ? line.author_index - 1 : partsToShow.length - 1;
+    if (targetIndex < 0) targetIndex = 0;
 
-    if (line.parts && line.parts.length) {
-        messages.push(
-            createMessage({
-                text: line.parts[0].trim(),
-                name,
-                isRight,
-                color,
-                metaText: line.parts[1]?.trim(),
-                authorId: aId,
-                avatarUrl
-            })
-        );
+    partsToShow.forEach((part, index) => {
+        const text = part.trim();
+        if (!text) return;
 
-        for (let i = 2; i < line.parts.length; i++) {
-            const part = line.parts[i].trim();
-            if (!part) continue;
-
-            messages.push(
-                createMessage({
-                    text: part,
-                    name,
-                    isRight,
-                    color,
-                    authorId: aId,
-                    avatarUrl
-                })
-            );
+        let metaText = null;
+        if (line.author_part && index === targetIndex) {
+            metaText = line.author_part.trim();
         }
-    } else {
+
         messages.push(
             createMessage({
-                text: line.content,
+                text,
                 name,
                 isRight,
                 color,
+                metaText,
                 authorId: aId,
                 avatarUrl
             })
         );
-    }
+    });
 
     return messages;
 }
@@ -407,5 +336,5 @@ data.lines.forEach(line => {
 });
 </script>
 
-</body>
+  </body>
 </html>

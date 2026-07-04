@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 <title>{{ title }}</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Audiowide&family=Nova+Square&display=swap');
 
 *, *::before, *::after {
     box-sizing: border-box;
@@ -14,7 +13,7 @@
 body {
     margin: 0;
     padding: 0;
-    font-family: 'Nova Square', sans-serif;
+    font-family: sans-serif;
     font-weight: 500;
     background-color: #f0f7f4;
     background-image: 
@@ -104,10 +103,11 @@ body {
 .name {
     font-family: 'Audiowide', sans-serif;
     font-size: 11px;
-    font-weight: 400;
+    font-weight: 700;
     margin-bottom: 6px;
     text-transform: uppercase;
     letter-spacing: 1px;
+    text-shadow: 0 1px 1px rgba(255, 255, 255, 0.8);
 }
 
 .system {
@@ -159,64 +159,6 @@ body {
     color: #1b4332;
     font-size: 11px;
 }
-
-@media print {
-    @page {
-        size: A4;
-        margin: 0 !important;
-    }
-
-    body {
-        margin: 0 !important;
-        padding: 0 !important;
-        background-color: #ffe680 !important;
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
-    }
-
-    body::before {
-        content: "";
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 20mm;
-        background: transparent;
-        pointer-events: none;
-    }
-
-    body::after {
-        content: "";
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        height: 20mm;
-        background: transparent;
-        pointer-events: none;
-    }
-
-    .chat {
-        max-width: 100% !important;
-        width: 100% !important;
-        margin: 0 !important;
-        padding: 0 20mm !important; 
-        display: block !important;
-    }
-    .msg {
-        break-inside: avoid !important;
-        page-break-inside: avoid !important;
-        margin-top: 6mm !important;
-        margin-bottom: 6mm !important;
-    }
-
-    .system {
-        break-inside: avoid !important;
-        page-break-inside: avoid !important;
-        margin: 10mm auto !important;
-    }
-}
-
 </style>
 </head>
 
@@ -235,7 +177,7 @@ const chat = document.getElementById("chat");
 const charMap = new Map(data.characters.map(c => [c.id, c]));
 
 function getColor(id) {
-    const colors = ["#2d6a4f", "#40916c", "#52b788", "#74c69d", "#95d5b2", "#b7e4c7", "#d8f3dc"];
+    const colors = ["#1b4332", "#2d6a4f", "#081c15", "#40916c", "#004b23", "#143601", "#245501"];
     return colors[id % colors.length];
 }
 
@@ -353,47 +295,33 @@ function render(line) {
     const isRight = (aId % 2 !== 0);
 
     const messages = [];
+    const partsToShow = (line.parts && line.parts.length > 0) ? line.parts : [line.content];
+    
+    let targetIndex = line.author_index !== null && line.author_index !== undefined ? line.author_index - 1 : partsToShow.length - 1;
+    if (targetIndex < 0) targetIndex = 0;
 
-    if (line.parts && line.parts.length) {
-        messages.push(
-            createMessage({
-                text: line.parts[0].trim(),
-                name,
-                isRight,
-                color,
-                metaText: line.parts[1]?.trim(),
-                authorId: aId,
-                avatarUrl
-            })
-        );
+    partsToShow.forEach((part, index) => {
+        const text = part.trim();
+        if (!text) return;
 
-        for (let i = 2; i < line.parts.length; i++) {
-            const part = line.parts[i].trim();
-            if (!part) continue;
-
-            messages.push(
-                createMessage({
-                    text: part,
-                    name,
-                    isRight,
-                    color,
-                    authorId: aId,
-                    avatarUrl
-                })
-            );
+        let metaText = null;
+        const authorText = line.author_text || line.author_part;
+        if (authorText && index === targetIndex) {
+            metaText = authorText.trim();
         }
-    } else {
+
         messages.push(
             createMessage({
-                text: line.content,
+                text,
                 name,
                 isRight,
                 color,
+                metaText,
                 authorId: aId,
                 avatarUrl
             })
         );
-    }
+    });
 
     return messages;
 }

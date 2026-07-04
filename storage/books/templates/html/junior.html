@@ -98,10 +98,11 @@ body {
 }
 
 .name {
-    font-size: 13px;
+    font-size: 14px;
     margin-bottom: 5px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    font-weight: bold;
 }
 
 .system {
@@ -156,64 +157,6 @@ body {
     color: #4b2c20;
     font-size: 12px;
 }
-
-
-@media print {
-    @page {
-        size: A4;
-        margin: 0 !important;
-    }
-
-    body {
-        margin: 0 !important;
-        padding: 0 !important;
-        background-color: #ffe680 !important;
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
-    }
-
-    body::before {
-        content: "";
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 20mm;
-        background: transparent;
-        pointer-events: none;
-    }
-
-    body::after {
-        content: "";
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        height: 20mm;
-        background: transparent;
-        pointer-events: none;
-    }
-
-    .chat {
-        max-width: 100% !important;
-        width: 100% !important;
-        margin: 0 !important;
-        padding: 0 20mm !important; 
-        display: block !important;
-    }
-    .msg {
-        break-inside: avoid !important;
-        page-break-inside: avoid !important;
-        margin-top: 6mm !important;
-        margin-bottom: 6mm !important;
-    }
-
-    .system {
-        break-inside: avoid !important;
-        page-break-inside: avoid !important;
-        margin: 10mm auto !important;
-    }
-}
 </style>
 </head>
 
@@ -233,7 +176,7 @@ const charMap = new Map(data.characters.map(c => [c.id, c]));
 
 function getFallbackEmoji(id) {
     const icons = ['🧸', '🍭', '🍌', '🖍️', '🍦', '🍩', '🧃', '🛹', '🎈'];
-    return icons[id % icons.length];
+    return icons[Math.abs(id) % icons.length];
 }
 
 function getRandomReactions() {
@@ -306,7 +249,6 @@ function createMessage({ text, name, isRight, color, metaText, authorId, avatarU
     nameDiv.className = "name";
     nameDiv.textContent = name;
     nameDiv.style.color = color;
-    nameDiv.style.textShadow = '1px 1px 0 #fff';
     
     col.appendChild(nameDiv);
     col.appendChild(bubble);
@@ -342,52 +284,42 @@ function render(line) {
         aId = 999;
     }
 
-    const colors = ["#ff6b6b", "#4ecdc4", "#ff8f5e", "#6c5ce7", "#fdcb6e", "#e84393", "#00b894"];
-    const color = colors[aId % colors.length];
+    const colors = ["#c92a2a", "#0b7285", "#b02000", "#4c00b0", "#a61e4d", "#085b2e", "#5f3dc4"];
+    const color = colors[Math.abs(aId) % colors.length];
     const isRight = (aId % 2 !== 0);
 
     const messages = [];
-
-    if (line.parts && line.parts.length) {
-        messages.push(
-            createMessage({
-                text: line.parts[0].trim(),
-                name,
-                isRight,
-                color,
-                metaText: line.parts[1]?.trim(),
-                authorId: aId,
-                avatarUrl
-            })
-        );
-
-        for (let i = 2; i < line.parts.length; i++) {
-            const part = line.parts[i].trim();
-            if (!part) continue;
-
-            messages.push(
-                createMessage({
-                    text: part,
-                    name,
-                    isRight,
-                    color,
-                    authorId: aId,
-                    avatarUrl
-                })
-            );
-        }
-    } else {
-        messages.push(
-            createMessage({
-                text: line.content,
-                name,
-                isRight,
-                color,
-                authorId: aId,
-                avatarUrl
-            })
-        );
+    const partsToShow = (line.parts && line.parts.length > 0) ? line.parts : [line.content];
+    
+    let targetIndex = line.author_index !== null && line.author_index !== undefined ? line.author_index - 1 : partsToShow.length - 1;
+    if (targetIndex < 0) {
+        targetIndex = 0;
     }
+
+    partsToShow.forEach((part, index) => {
+        const text = part.trim();
+        if (!text) {
+            return;
+        }
+
+        let metaText = null;
+        const authorText = line.author_text || line.author_part;
+        if (authorText && index === targetIndex) {
+            metaText = authorText.trim();
+        }
+
+        messages.push(
+            createMessage({
+                text,
+                name,
+                isRight,
+                color,
+                metaText,
+                authorId: aId,
+                avatarUrl
+            })
+        );
+    });
 
     return messages;
 }
